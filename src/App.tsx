@@ -238,7 +238,7 @@ export default function App() {
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <img 
-              src="/logo.png" 
+              src="/favicon.svg" 
               alt="Logo" 
               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-lg shadow-primary/20 object-cover border border-primary/20"
               referrerPolicy="no-referrer"
