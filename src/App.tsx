@@ -65,7 +65,6 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 export default function App() {
   const [playerId, setPlayerId] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<UCPackage | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -835,7 +834,7 @@ export default function App() {
                 <Button 
                   className="w-full sm:w-auto h-12 px-8 font-bold uppercase tracking-wider gap-2 ml-0 sm:ml-4 shadow-lg shadow-green-500/20 bg-[#25D366] hover:bg-[#20bd5a] border-none text-white" 
                   render={
-                    <a href="https://wa.me/+917973284844" target="_blank" rel="noopener noreferrer">
+                    <a href="https://wa.me/+918389070667" target="_blank" rel="noopener noreferrer">
                       <WhatsAppIcon className="w-5 h-5 text-white" />
                       WhatsApp Support
                     </a>
@@ -983,66 +982,20 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Floating Support Menu */}
-      <div className="fixed bottom-4 right-3 sm:right-4 md:bottom-6 md:right-6 z-[60] flex flex-col items-end gap-3 safe-bottom">
-        <AnimatePresence>
-          {isSupportOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.8 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.8 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="flex flex-col gap-3"
-            >
-              <motion.a
-                href="https://t.me/+14347328402"
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 md:w-14 md:h-14 bg-white text-[#0088cc] rounded-full flex items-center justify-center shadow-xl shadow-sky-500/30 border border-white/20 transition-transform touch-target overflow-hidden relative group/btn"
-              >
-                <div className="absolute inset-0 bg-[#0088cc] opacity-0 group-hover/btn:opacity-10 transition-opacity" />
-                <TelegramIcon className="w-8 h-8 md:w-9 md:h-9" />
-              </motion.a>
-              <motion.a
-                href="https://wa.me/+917973284844"
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 md:w-14 md:h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-xl shadow-green-500/30 border border-white/20 transition-transform touch-target overflow-hidden relative group/btn"
-              >
-                <div className="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity" />
-                <WhatsAppIcon className="w-7 h-7 md:w-8 md:h-8" />
-              </motion.a>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        <motion.button
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsSupportOpen(!isSupportOpen)}
-          className={cn(
-            "w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-2xl border transition-all touch-target relative",
-            isSupportOpen 
-              ? "bg-muted text-muted-foreground border-border/50 shadow-none"
-              : "bg-primary text-primary-foreground border-primary/20 shadow-primary/30"
-          )}
-        >
-          {!isSupportOpen && (
-            <div className="absolute inset-0 rounded-full border border-primary animate-ping opacity-50" />
-          )}
-          {isSupportOpen ? (
-            <X className="w-6 h-6 md:w-7 md:h-7 relative z-10" />
-          ) : (
-            <Headphones className="w-6 h-6 md:w-7 md:h-7 relative z-10" />
-          )}
-        </motion.button>
-      </div>
+      {/* Floating WhatsApp Button */}
+      <motion.a
+        href="https://wa.me/+918389070667"
+        target="_blank"
+        rel="noopener noreferrer"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-4 right-3 sm:right-4 md:bottom-6 md:right-6 z-[60] w-14 h-14 md:w-16 md:h-16 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgb(37,211,102,0.4)] border border-white/20 transition-all touch-target safe-bottom"
+      >
+        <WhatsAppIcon className="w-8 h-8 md:w-10 md:h-10" />
+        <div className="absolute inset-0 rounded-full border-2 border-[#25D366] animate-ping opacity-30" />
+      </motion.a>
     </div>
   );
 }
