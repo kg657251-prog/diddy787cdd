@@ -1,0 +1,21 @@
+{
+  "name": "CardingUC - BGMI UC Top Up",
+  "short_name": "CardingUC",
+  "description": "Top up BGMI UC instantly at the best price in India.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0d1a",
+  "theme_color": "#0f0d1a",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
