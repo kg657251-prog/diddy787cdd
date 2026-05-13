@@ -68,8 +68,6 @@ export default function App() {
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<UCPackage | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
-  const [isUserInfoDialogOpen, setIsUserInfoDialogOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState({ name: '', email: '', phone: '' });
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifiedName, setVerifiedName] = useState<string | null>(null);
@@ -166,8 +164,8 @@ export default function App() {
 
 
   const handlePurchase = async () => {
-    if (!playerId || !selectedPackage || !selectedPayment || !userInfo.name || !userInfo.email || !userInfo.phone) {
-      toast.error('Please complete all steps and contact information');
+    if (!playerId || !selectedPackage || !selectedPayment || !verifiedName) {
+      toast.error('Please complete all steps and verify your ID');
       return;
     }
 
@@ -190,9 +188,9 @@ export default function App() {
           packageId: selectedPackage.id,
           amount: selectedPackage.amount,
           price: selectedPackage.price,
-          name: userInfo.name,
-          email: userInfo.email,
-          phone: userInfo.phone
+          name: 'N/A',
+          email: 'not-provided@cardinguc.com',
+          phone: '0000000000'
         }),
       });
 
@@ -414,7 +412,7 @@ export default function App() {
                     <div className="space-y-4">
                       <div className="flex gap-2">
                         <div className="relative flex-1">
-                          <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input 
                             placeholder="Example: 5123456789" 
                             className={cn(
@@ -625,7 +623,7 @@ export default function App() {
                         <Button 
                           className="w-full sm:w-auto min-w-[240px] h-14 text-lg font-black uppercase tracking-widest italic group/pay overflow-hidden relative shadow-xl shadow-primary/20 gap-2 rounded-xl"
                           disabled={!playerId || !verifiedName || !selectedPackage || !selectedPayment || isProcessingPayment}
-                          onClick={() => setIsUserInfoDialogOpen(true)}
+                          onClick={() => handlePurchase()}
                         >
                           <span className="relative z-10 flex items-center justify-center gap-2">
                             {isProcessingPayment ? (
@@ -696,7 +694,7 @@ export default function App() {
                         <td className="px-3 sm:px-6 py-2.5 sm:py-4">
                           <div className="flex items-center gap-2 sm:gap-3">
                             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted hidden sm:flex items-center justify-center">
-                              <UserIcon className="w-3.5 h-3.5 sm:w-4 h-4 text-muted-foreground" />
+                              <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                             </div>
                             <span className="text-xs sm:text-sm font-mono tracking-wider">{purchase.uid}</span>
                           </div>
@@ -871,190 +869,6 @@ export default function App() {
         </section>
       </main>
 
-
-      {/* User Info Dialog — Premium Checkout Overlay */}
-      <Dialog open={isUserInfoDialogOpen} onOpenChange={setIsUserInfoDialogOpen}>
-        <DialogContent className="sm:max-w-[460px] p-0 bg-card/95 backdrop-blur-2xl border-primary/20 overflow-hidden rounded-2xl shadow-2xl shadow-primary/10">
-          {/* Animated gradient header */}
-          <div className="relative px-6 pt-7 pb-5 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent" />
-            <motion.div
-              className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-              transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-            />
-            <div className="relative z-10 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center shadow-lg shadow-primary/10">
-                <CreditCard className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <DialogTitle className="text-lg font-black uppercase italic tracking-tight">
-                  Secure <span className="text-primary">Checkout</span>
-                </DialogTitle>
-                <DialogDescription className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mt-0.5">
-                  Complete your purchase details
-                </DialogDescription>
-              </div>
-            </div>
-          </div>
-
-          {/* Order Summary Mini Card */}
-          {selectedPackage && (
-            <div className="mx-6 mb-1">
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/15"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <img
-                      src="https://i.ibb.co/LdZSDhwf/f5cb4b08e7501ad2a7f3423256672e29-removebg-preview.png"
-                      alt="UC"
-                      className="w-7 h-7 object-contain"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                  <div>
-                    <div className="text-sm font-black tracking-tight">{selectedPackage.amount} UC</div>
-                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">UID: {playerId}</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-lg font-black text-primary tracking-tighter">{selectedPackage.currency} {selectedPackage.price}</div>
-                  {selectedPackage.bonus && (
-                    <Badge className="text-[8px] bg-green-500/15 text-green-500 border-green-500/20 px-1.5 py-0 rounded-full">+{selectedPackage.bonus} Bonus</Badge>
-                  )}
-                </div>
-              </motion.div>
-            </div>
-          )}
-
-          {/* Form Fields */}
-          <div className="px-6 py-4 space-y-3.5">
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.05 }}
-              className="space-y-1.5"
-            >
-              <Label htmlFor="name" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                <UserIcon className="w-3 h-3" /> Full Name
-              </Label>
-              <div className="relative group">
-                <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-                <Input
-                  id="name"
-                  placeholder="John Doe"
-                  className="pl-10 h-11 bg-background/60 border-border/40 focus:border-primary/50 rounded-xl text-sm font-medium transition-all focus:bg-background/80 focus:shadow-lg focus:shadow-primary/5"
-                  value={userInfo.name}
-                  onChange={(e) => setUserInfo({...userInfo, name: e.target.value})}
-                />
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-1.5"
-            >
-              <Label htmlFor="email" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                <Mail className="w-3 h-3" /> Email Address
-              </Label>
-              <div className="relative group">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@email.com"
-                  className="pl-10 h-11 bg-background/60 border-border/40 focus:border-primary/50 rounded-xl text-sm font-medium transition-all focus:bg-background/80 focus:shadow-lg focus:shadow-primary/5"
-                  value={userInfo.email}
-                  onChange={(e) => setUserInfo({...userInfo, email: e.target.value})}
-                />
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 }}
-              className="space-y-1.5"
-            >
-              <Label htmlFor="phone" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                <Phone className="w-3 h-3" /> Phone Number
-              </Label>
-              <div className="relative group">
-                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+91 98765 43210"
-                  className="pl-10 h-11 bg-background/60 border-border/40 focus:border-primary/50 rounded-xl text-sm font-medium transition-all focus:bg-background/80 focus:shadow-lg focus:shadow-primary/5"
-                  value={userInfo.phone}
-                  onChange={(e) => setUserInfo({...userInfo, phone: e.target.value})}
-                  inputMode="tel"
-                />
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Pay Button + Trust */}
-          <div className="px-6 pb-6 pt-1 space-y-3">
-            <Button
-              className="w-full h-13 text-base font-black uppercase tracking-widest italic gap-2.5 shadow-xl shadow-primary/25 rounded-xl relative overflow-hidden group/pay"
-              onClick={() => {
-                if (!userInfo.name || !userInfo.email || !userInfo.phone) {
-                  toast.error('Please fill in all fields');
-                  return;
-                }
-                setIsUserInfoDialogOpen(false);
-                handlePurchase();
-              }}
-              disabled={isProcessingPayment}
-            >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                {isProcessingPayment ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4" />
-                    Pay {selectedPackage ? `${selectedPackage.currency} ${selectedPackage.price}` : 'Securely'}
-                    <ArrowRight className="w-4 h-4 group-hover/pay:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </span>
-              {/* Shimmer effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ repeat: Infinity, duration: 2.5, ease: 'linear', repeatDelay: 1 }}
-              />
-            </Button>
-
-            {/* Trust Badges */}
-            <div className="flex items-center justify-center gap-4 pt-1">
-              <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest">
-                <Lock className="w-3 h-3 text-green-500/70" />
-                256-bit SSL
-              </div>
-              <div className="w-px h-3 bg-border/50" />
-              <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest">
-                <Zap className="w-3 h-3 text-amber-500/70" />
-                Instant Delivery
-              </div>
-              <div className="w-px h-3 bg-border/50" />
-              <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest">
-                <ShieldCheck className="w-3 h-3 text-primary/70" />
-                Secure
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Player Verified Popup */}
       <Dialog open={isVerifiedPopupOpen} onOpenChange={setIsVerifiedPopupOpen}>
