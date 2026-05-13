@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { 
   Dialog,
@@ -238,8 +238,9 @@ export default function App() {
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <img 
-              src="/favicon.svg" 
-              alt="Logo" 
+              src="/logo.png" 
+              alt="CardingUC Logo" 
+              aria-label="CardingUC Official Logo"
               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-lg shadow-primary/20 object-cover border border-primary/20"
               referrerPolicy="no-referrer"
             />
@@ -255,19 +256,19 @@ export default function App() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4">
             <nav className="flex items-center gap-4">
-              <Button variant="ghost" className="text-sm font-medium px-3" onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button variant="ghost" className="text-sm font-medium px-3" render={<a href="#packages" />}>
                 Packages
               </Button>
-              <Button variant="ghost" className="text-sm font-medium px-3" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button variant="ghost" className="text-sm font-medium px-3" render={<a href="#about" />}>
                 About Us
               </Button>
-              <Button variant="ghost" className="text-sm font-medium px-3" onClick={() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button variant="ghost" className="text-sm font-medium px-3" render={<a href="#support" />}>
                 Support
               </Button>
               <Button 
                 variant="outline" 
                 className="text-xs font-bold border-sky-500/50 text-sky-600 hover:bg-sky-500/10 px-3 h-9 uppercase tracking-tighter" 
-                onClick={() => window.open('https://t.me/+14347328402', '_blank')}
+                render={<a href="https://t.me/+14347328402" target="_blank" rel="noopener noreferrer" />}
               >
                 <TelegramIcon className="w-3.5 h-3.5 mr-1" />
                 Telegram <span className="hidden lg:inline ml-1">Support</span>
@@ -296,15 +297,15 @@ export default function App() {
               className="md:hidden overflow-hidden border-t border-border/40 bg-background/98 backdrop-blur-xl"
             >
               <nav className="container mx-auto px-3 py-3 flex flex-col gap-1">
-                <button onClick={() => { setIsMobileMenuOpen(false); document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' }); }} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary/10 active:bg-primary/15 transition-colors touch-target w-full text-left">
+                <a href="#packages" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary/10 active:bg-primary/15 transition-colors touch-target">
                   <Zap className="w-4 h-4 text-primary" /> Packages
-                </button>
-                <button onClick={() => { setIsMobileMenuOpen(false); document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }); }} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary/10 active:bg-primary/15 transition-colors touch-target w-full text-left">
+                </a>
+                <a href="#about" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary/10 active:bg-primary/15 transition-colors touch-target">
                   <Info className="w-4 h-4 text-primary" /> About Us
-                </button>
-                <button onClick={() => { setIsMobileMenuOpen(false); document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' }); }} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary/10 active:bg-primary/15 transition-colors touch-target w-full text-left">
+                </a>
+                <a href="#support" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary/10 active:bg-primary/15 transition-colors touch-target">
                   <ShieldCheck className="w-4 h-4 text-primary" /> Support
-                </button>
+                </a>
                 <div className="h-px bg-border/40 my-1" />
                 <a href="https://t.me/+14347328402" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-sky-500 bg-sky-500/10 hover:bg-sky-500/15 active:bg-sky-500/20 transition-colors touch-target">
                   <TelegramIcon className="w-4 h-4" /> Telegram Support
@@ -413,7 +414,7 @@ export default function App() {
                     <div className="space-y-4">
                       <div className="flex gap-2">
                         <div className="relative flex-1">
-                          <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input 
                             placeholder="Example: 5123456789" 
                             className={cn(
@@ -695,7 +696,7 @@ export default function App() {
                         <td className="px-3 sm:px-6 py-2.5 sm:py-4">
                           <div className="flex items-center gap-2 sm:gap-3">
                             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted hidden sm:flex items-center justify-center">
-                              <UserIcon className="w-3.5 h-3.5 sm:w-4 h-4 text-muted-foreground" />
+                              <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                             </div>
                             <span className="text-xs sm:text-sm font-mono tracking-wider">{purchase.uid}</span>
                           </div>
@@ -826,18 +827,22 @@ export default function App() {
               <div className="space-y-4">
                 <Button 
                   className="w-full sm:w-auto h-12 px-8 font-bold uppercase tracking-wider gap-2 shadow-lg shadow-sky-500/20 bg-sky-600 hover:bg-sky-700 border-none mb-4 sm:mb-0" 
-                  onClick={() => window.open('https://t.me/+14347328402', '_blank')}
-                >
-                  <TelegramIcon className="w-5 h-5 text-white" />
-                  Telegram Support
-                </Button>
+                  render={
+                    <a href="https://t.me/+14347328402" target="_blank" rel="noopener noreferrer">
+                      <TelegramIcon className="w-5 h-5 text-white" />
+                      Telegram Support
+                    </a>
+                  } 
+                />
                 <Button 
                   className="w-full sm:w-auto h-12 px-8 font-bold uppercase tracking-wider gap-2 ml-0 sm:ml-4 shadow-lg shadow-green-500/20 bg-[#25D366] hover:bg-[#20bd5a] border-none text-white" 
-                  onClick={() => window.open('https://wa.me/+917973284844', '_blank')}
-                >
-                  <WhatsAppIcon className="w-5 h-5 text-white" />
-                  WhatsApp Support
-                </Button>
+                  render={
+                    <a href="https://wa.me/+917973284844" target="_blank" rel="noopener noreferrer">
+                      <WhatsAppIcon className="w-5 h-5 text-white" />
+                      WhatsApp Support
+                    </a>
+                  } 
+                />
                 <div className="flex items-center gap-4 pt-2">
                   <div className="flex -space-x-2">
                     {[1, 2, 3].map(i => (
@@ -1101,6 +1106,7 @@ export default function App() {
 
 
       {/* Footer */}
+      {/* Footer */}
       <footer className="mt-12 md:mt-20 border-t border-primary/20 bg-gradient-to-b from-background to-primary/5 py-10 md:py-16 relative overflow-hidden">
         {/* Engaging Background Elements */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
@@ -1143,9 +1149,9 @@ export default function App() {
             <div>
               <h4 className="font-bold uppercase tracking-wider text-sm mb-4 text-foreground">Support</h4>
               <ul className="space-y-3 text-sm text-muted-foreground font-medium">
-                <li><button onClick={() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-primary transition-colors flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary/50" />Help Center</button></li>
+                <li><a href="#support" className="hover:text-primary transition-colors flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary/50" />Help Center</a></li>
                 <li><a href="https://t.me/+14347328402" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-2"><TelegramIcon className="w-3 h-3 text-sky-500" />Telegram Support</a></li>
-                <li><button onClick={() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-primary transition-colors flex items-center gap-2"><Info className="w-3 h-3 text-primary/50" />FAQ</button></li>
+                <li><a href="#support" className="hover:text-primary transition-colors flex items-center gap-2"><Info className="w-3 h-3 text-primary/50" />FAQ</a></li>
               </ul>
             </div>
           </div>
