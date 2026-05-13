@@ -238,7 +238,7 @@ export default function App() {
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <img 
-              src="/logo.png" 
+              src="/favicon.svg" 
               alt="CardingUC Logo" 
               aria-label="CardingUC Official Logo"
               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-lg shadow-primary/20 object-cover border border-primary/20"
@@ -414,7 +414,7 @@ export default function App() {
                     <div className="space-y-4">
                       <div className="flex gap-2">
                         <div className="relative flex-1">
-                          <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input 
                             placeholder="Example: 5123456789" 
                             className={cn(
@@ -696,7 +696,7 @@ export default function App() {
                         <td className="px-3 sm:px-6 py-2.5 sm:py-4">
                           <div className="flex items-center gap-2 sm:gap-3">
                             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted hidden sm:flex items-center justify-center">
-                              <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                              <UserIcon className="w-3.5 h-3.5 sm:w-4 h-4 text-muted-foreground" />
                             </div>
                             <span className="text-xs sm:text-sm font-mono tracking-wider">{purchase.uid}</span>
                           </div>
