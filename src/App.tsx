@@ -912,9 +912,9 @@ export default function App() {
                 <div className="relative mb-4">
                   <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-transparent flex items-center justify-center border border-green-500/30 group-hover:scale-105 transition-transform duration-500 p-2 overflow-hidden bg-black/40">
                     <img 
-                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Battlegrounds_Mobile_India_Logo.png/512px-Battlegrounds_Mobile_India_Logo.png" 
+                      src="https://i.ibb.co/6R8m4f9/bgmi-app-icon.png" 
                       alt="BGMI" 
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
                     />
                   </div>
