@@ -19,7 +19,7 @@ import {
   Lock,
   Sparkles,
   ArrowRight
-} from 'lucide-center';
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
