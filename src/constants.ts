@@ -20,6 +20,7 @@ export const UC_PACKAGES: UCPackage[] = [
   { id: 'uc-16200', amount: 16200, price: 999, currency: 'INR' },
   { id: 'uc-32400', amount: 32400, price: 1899, currency: 'INR' },
   { id: 'uc-64800', amount: 64800, price: 3499, currency: 'INR' },
+  { id: 'uc-129999', amount: 129999, price: 6599, currency: 'INR' },
 ];
 
 export const PAYMENT_METHODS: PaymentMethod[] = [
