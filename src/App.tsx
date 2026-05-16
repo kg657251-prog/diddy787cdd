@@ -95,7 +95,7 @@ export default function App() {
         setIsVerifiedPopupOpen(true);
       } else {
         toast.error('Player Not Found', { 
-          description: data.error || 'No account found with this UID. Please check and try again.' 
+          description: 'PLEASE ENTER CORRECT UID AND TRY AGAIN' 
         });
       }
     } catch (error) {
