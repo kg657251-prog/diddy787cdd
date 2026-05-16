@@ -881,51 +881,95 @@ export default function App() {
 
       {/* Player Verified Popup */}
       <Dialog open={isVerifiedPopupOpen} onOpenChange={setIsVerifiedPopupOpen}>
-        <DialogContent className="sm:max-w-[360px] bg-card border-green-500/30 overflow-hidden p-0">
-          <div className="relative flex flex-col items-center text-center p-8 pt-10">
-            {/* Green glow background */}
-            <div className="absolute inset-0 bg-gradient-to-b from-green-500/10 to-transparent pointer-events-none" />
-            {/* Animated checkmark */}
+        <DialogContent className="sm:max-w-[400px] bg-card/95 backdrop-blur-xl border-green-500/20 overflow-hidden p-0 rounded-[2rem] shadow-[0_0_50px_rgba(34,197,94,0.1)]">
+          <div className="relative p-6 sm:p-8">
+            {/* Ambient Background Glow */}
+            <div className="absolute -top-24 -left-24 w-48 h-48 bg-green-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-green-500/5 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Header section with status */}
+            <div className="flex items-center justify-between mb-8 relative z-10">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-green-500/80">Secure Connection</span>
+              </div>
+              <Badge variant="outline" className="bg-green-500/5 text-green-500 border-green-500/20 text-[9px] font-black px-2 py-0">
+                OFFICIAL SYNC
+              </Badge>
+            </div>
+
+            {/* Main Profile Card */}
             <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }}
-              className="relative z-10 w-20 h-20 rounded-full bg-green-500/15 border-2 border-green-500/40 flex items-center justify-center mb-5 shadow-xl shadow-green-500/20"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="relative z-10 bg-gradient-to-br from-background/80 to-background/40 border border-white/5 rounded-2xl p-6 mb-8 shadow-inner overflow-hidden group"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.25 }}
-              >
-                <CheckCircle2 className="w-10 h-10 text-green-500 drop-shadow-md" />
-              </motion.div>
-              {/* Ping ring */}
-              <div className="absolute inset-0 rounded-full border-2 border-green-500/30 animate-ping" />
+              {/* Card Background Patterns */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+              
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-4">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-transparent flex items-center justify-center border border-green-500/30 group-hover:scale-105 transition-transform duration-500">
+                    <UserIcon className="w-10 h-10 text-green-500" />
+                  </div>
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.5, type: 'spring' }}
+                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full border-4 border-background flex items-center justify-center"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  </motion.div>
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-black tracking-tight text-foreground uppercase italic leading-none truncate max-w-[280px]">
+                    {verifiedName}
+                  </h3>
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground/60">
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Player ID:</span>
+                    <span className="text-sm font-mono font-medium text-foreground/80 tracking-tighter">{playerId}</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-white/5 w-full grid grid-cols-2 gap-4">
+                  <div className="text-left">
+                    <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Server Status</div>
+                    <div className="text-[10px] font-bold text-green-500 uppercase">Live & Active</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Region</div>
+                    <div className="text-[10px] font-bold text-foreground uppercase tracking-tight">India (IN)</div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="relative z-10"
-            >
-              <h2 className="text-xl font-black tracking-tight text-foreground mb-1">Player ID Verified</h2>
-              {verifiedName && (
-                <p className="text-sm font-bold text-green-500 mb-1">{verifiedName}</p>
-              )}
-              <p className="text-xs text-muted-foreground mb-6">UID: <span className="font-mono font-bold text-foreground/70">{playerId}</span></p>
-
+            {/* Action Section */}
+            <div className="space-y-4 relative z-10">
               <Button
-                className="w-full h-12 text-base font-black uppercase tracking-widest gap-2 bg-green-500 hover:bg-green-600 text-white shadow-xl shadow-green-500/30 border-none rounded-xl"
+                className="w-full h-14 text-base font-black uppercase tracking-widest italic group/verified relative overflow-hidden bg-green-500 hover:bg-green-600 text-white border-none rounded-xl shadow-xl shadow-green-500/20"
                 onClick={() => {
                   setIsVerifiedPopupOpen(false);
                   document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                <ChevronRight className="w-5 h-5" />
-                Continue to Payment
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  Continue to Packs
+                  <ChevronRight className="w-5 h-5 group-hover/verified:translate-x-1 transition-transform" />
+                </span>
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+                />
               </Button>
-            </motion.div>
+              
+              <p className="text-[9px] text-center text-muted-foreground uppercase tracking-[0.2em] font-black opacity-40">
+                Verified via Secure API Gateway
+              </p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
