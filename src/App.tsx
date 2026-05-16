@@ -465,14 +465,14 @@ export default function App() {
                             exit={{ opacity: 0, height: 0, marginTop: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-                              <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                            <div className="flex items-center gap-4 p-4 rounded-3xl bg-black/40 backdrop-blur-md border border-green-500/20 shadow-[0_0_30px_rgba(34,197,94,0.1)]">
+                              <div className="w-11 h-11 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 border border-green-500/20">
+                                <CheckCircle2 className="w-6 h-6 text-green-500" />
                               </div>
-                              <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Player Verified</span>
-                                <span className="text-sm font-black text-foreground tracking-tight">{verifiedName}</span>
-                                <span className="text-[10px] text-muted-foreground font-mono">UID: {playerId}</span>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-[11px] font-black text-green-500 uppercase tracking-[0.2em] mb-0.5">Player Verified</span>
+                                <h4 className="text-lg font-black text-white tracking-tight leading-none truncate">{verifiedName}</h4>
+                                <span className="text-xs text-muted-foreground/60 font-mono mt-1">UID: {playerId}</span>
                               </div>
                             </div>
                           </motion.div>
@@ -522,7 +522,7 @@ export default function App() {
                           className={cn(
                             "relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all group/btn disabled:opacity-50 disabled:cursor-not-allowed touch-target",
                             selectedPackage?.id === pkg.id 
-                              ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary),0.3)]" 
+                              ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(34,197,94,0.3)]" 
                               : "border-border/50 bg-background/50 hover:border-primary/30 hover:bg-primary/5"
                           )}
                         >
