@@ -38,39 +38,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       },
+      redirect: "follow",
     });
 
-    // Extract user_auth cookie from response
-    const setCookieHeaders = tokenResponse.headers.getSetCookie?.() || [];
+    // Extract cookies from response headers
+    // Use multiple approaches for compatibility across Node.js versions
     let userAuthCookie = "";
     let allCookies: string[] = [];
 
-    // Try getSetCookie() first, then fall back to get('set-cookie')
-    let cookieHeaders: string[] = [];
-    if (setCookieHeaders.length > 0) {
-      cookieHeaders = setCookieHeaders;
-    } else {
-      const rawSetCookie = tokenResponse.headers.get('set-cookie');
-      if (rawSetCookie) {
-        cookieHeaders = rawSetCookie.split(/,(?=\s*\w+=)/);
+    // Approach 1: Try getSetCookie() (Node 20+)
+    let cookieStrings: string[] = [];
+    try {
+      const setCookieResult = (tokenResponse.headers as any).getSetCookie?.();
+      if (setCookieResult && setCookieResult.length > 0) {
+        cookieStrings = setCookieResult;
+      }
+    } catch (e) {
+      // getSetCookie not available
+    }
+
+    // Approach 2: Fall back to raw header
+    if (cookieStrings.length === 0) {
+      const rawCookie = tokenResponse.headers.get('set-cookie');
+      if (rawCookie) {
+        // Split on comma but not within cookie values (rough heuristic)
+        cookieStrings = rawCookie.split(/,(?=[^ ])/);
       }
     }
 
-    for (const cookie of cookieHeaders) {
-      // Collect all cookies for forwarding
+    console.log(`Found ${cookieStrings.length} cookies from rooter.gg`);
+
+    for (const cookie of cookieStrings) {
       const cookiePair = cookie.split(';')[0].trim();
       allCookies.push(cookiePair);
       
-      if (cookie.trim().startsWith('user_auth=')) {
-        const match = cookie.match(/user_auth=([^;]+)/);
-        if (match) {
-          userAuthCookie = match[1];
-        }
+      if (cookiePair.startsWith('user_auth=')) {
+        userAuthCookie = cookiePair.replace('user_auth=', '');
       }
     }
 
     if (!userAuthCookie) {
-      console.error("Failed to get user_auth cookie from rooter.gg");
+      console.error("No user_auth cookie found. Cookies received:", allCookies.map(c => c.split('=')[0]));
       return res.status(502).json({ 
         success: false, 
         error: "Verification service temporarily unavailable. Please try again." 
@@ -83,8 +91,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const decoded = decodeURIComponent(userAuthCookie);
       const parsed = JSON.parse(decoded);
       accessToken = parsed.accessToken || "";
+      console.log("Got access token:", accessToken ? "yes (length: " + accessToken.length + ")" : "no");
     } catch (e) {
-      console.error("Failed to parse user_auth cookie:", e);
+      console.error("Failed to parse user_auth cookie. Raw value length:", userAuthCookie.length);
       return res.status(502).json({ 
         success: false, 
         error: "Verification service temporarily unavailable. Please try again." 
@@ -92,7 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!accessToken) {
-      console.error("No accessToken found in user_auth cookie");
+      console.error("Empty accessToken after parsing");
       return res.status(502).json({ 
         success: false, 
         error: "Verification service temporarily unavailable. Please try again." 
@@ -108,15 +117,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "Authorization": `Bearer ${accessToken}`,
         "Device-Type": "web",
         "App-Version": "1.0.0",
-        "Device-Id": "cardinguc-verifier",
+        "Device-Id": "web-verifier",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "application/json",
         "Cookie": allCookies.join('; '),
       },
     });
 
-    const data = await apiResponse.json();
-    console.log("API Response:", JSON.stringify(data));
+    const responseText = await apiResponse.text();
+    console.log("API Response status:", apiResponse.status, "body:", responseText.substring(0, 500));
+
+    let data: any;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse API response as JSON");
+      return res.status(502).json({ 
+        success: false, 
+        error: "Verification service returned invalid response. Please try again." 
+      });
+    }
 
     if (data.transaction === "SUCCESS" && data.unipinRes?.username) {
       return res.status(200).json({ 
@@ -125,15 +145,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         message: "ID Verified" 
       });
     } else {
-      // Player not found or invalid ID
       return res.status(404).json({ 
         success: false, 
         error: data.message || "Player not found. Please check your BGMI UID." 
       });
     }
 
-  } catch (error) {
-    console.error("Verification error:", error);
+  } catch (error: any) {
+    console.error("Verification error:", error?.message || error);
     return res.status(500).json({ 
       success: false,
       error: "Failed to verify player ID. Please try again later." 
