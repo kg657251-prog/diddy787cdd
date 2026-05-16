@@ -19,7 +19,7 @@ import {
   Lock,
   Sparkles,
   ArrowRight
-} from 'lucide-react';
+} from 'lucide-center';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -910,8 +910,13 @@ export default function App() {
               
               <div className="flex flex-col items-center text-center">
                 <div className="relative mb-4">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-transparent flex items-center justify-center border border-green-500/30 group-hover:scale-105 transition-transform duration-500">
-                    <UserIcon className="w-10 h-10 text-green-500" />
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-transparent flex items-center justify-center border border-green-500/30 group-hover:scale-105 transition-transform duration-500 p-2 overflow-hidden bg-black/40">
+                    <img 
+                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Battlegrounds_Mobile_India_Logo.png/512px-Battlegrounds_Mobile_India_Logo.png" 
+                      alt="BGMI" 
+                      className="w-full h-full object-contain"
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
                   <motion.div 
                     initial={{ scale: 0 }}
@@ -924,7 +929,7 @@ export default function App() {
                 </div>
 
                 <div className="space-y-1">
-                  <h3 className="text-2xl font-black tracking-tight text-foreground uppercase italic leading-none truncate max-w-[280px]">
+                  <h3 className="text-2xl font-black tracking-tight text-foreground uppercase italic leading-none px-2 overflow-visible">
                     {verifiedName}
                   </h3>
                   <div className="flex items-center justify-center gap-2 text-muted-foreground/60">
