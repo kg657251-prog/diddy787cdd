@@ -460,19 +460,23 @@ export default function App() {
                       <AnimatePresence>
                         {verifiedName && (
                           <motion.div 
-                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                            animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
-                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                            className="overflow-hidden"
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="mt-6"
                           >
-                            <div className="flex items-center gap-4 p-4 rounded-3xl bg-black/40 backdrop-blur-md border border-green-500/20 shadow-[0_0_30px_rgba(34,197,94,0.1)]">
-                              <div className="w-11 h-11 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 border border-green-500/20">
-                                <CheckCircle2 className="w-6 h-6 text-green-500" />
+                            <div className="flex items-center gap-5 p-4 sm:p-5 rounded-[2rem] bg-primary/5 backdrop-blur-sm border border-primary/20 shadow-[0_0_40px_rgba(var(--primary),0.15)] relative overflow-hidden group">
+                              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 relative z-10 shadow-inner">
+                                <CheckCircle2 className="w-7 h-7 text-primary" />
                               </div>
-                              <div className="flex flex-col min-w-0">
-                                <span className="text-[11px] font-black text-green-500 uppercase tracking-[0.2em] mb-0.5">Player Verified</span>
-                                <h4 className="text-lg font-black text-white tracking-tight leading-none truncate">{verifiedName}</h4>
-                                <span className="text-xs text-muted-foreground/60 font-mono mt-1">UID: {playerId}</span>
+                              <div className="flex flex-col min-w-0 relative z-10">
+                                <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1">Player Verified</span>
+                                <h4 className="text-xl font-black text-white tracking-tight leading-none truncate mb-1.5">{verifiedName}</h4>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider">UID:</span>
+                                  <span className="text-xs text-muted-foreground font-mono bg-muted/30 px-1.5 py-0.5 rounded-md">{playerId}</span>
+                                </div>
                               </div>
                             </div>
                           </motion.div>
@@ -890,10 +894,10 @@ export default function App() {
             {/* Header section with status */}
             <div className="flex items-center justify-between mb-8 relative z-10">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-green-500/80">Secure Connection</span>
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">Secure Connection</span>
               </div>
-              <Badge variant="outline" className="bg-green-500/5 text-green-500 border-green-500/20 text-[9px] font-black px-2 py-0">
+              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[9px] font-black px-2 py-0">
                 OFFICIAL SYNC
               </Badge>
             </div>
@@ -906,23 +910,18 @@ export default function App() {
               className="relative z-10 bg-gradient-to-br from-background/80 to-background/40 border border-white/5 rounded-2xl p-6 mb-8 shadow-inner overflow-hidden group"
             >
               {/* Card Background Patterns */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
               
               <div className="flex flex-col items-center text-center">
                 <div className="relative mb-4">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-transparent flex items-center justify-center border border-green-500/30 group-hover:scale-105 transition-transform duration-500 p-2 overflow-hidden bg-black/40">
-                    <img 
-                      src="https://i.ibb.co/6R8m4f9/bgmi-app-icon.png" 
-                      alt="BGMI" 
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center border border-primary/30 group-hover:scale-105 transition-transform duration-500 p-2 overflow-hidden bg-black/40">
+                    <UserIcon className="w-10 h-10 text-primary" />
                   </div>
                   <motion.div 
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.5, type: 'spring' }}
-                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full border-4 border-background flex items-center justify-center"
+                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary rounded-full border-4 border-background flex items-center justify-center"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                   </motion.div>
@@ -941,7 +940,7 @@ export default function App() {
                 <div className="mt-6 pt-6 border-t border-white/5 w-full grid grid-cols-2 gap-4">
                   <div className="text-left">
                     <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Server Status</div>
-                    <div className="text-[10px] font-bold text-green-500 uppercase">Live & Active</div>
+                    <div className="text-[10px] font-bold text-primary uppercase">Live & Active</div>
                   </div>
                   <div className="text-right">
                     <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Region</div>
@@ -954,7 +953,7 @@ export default function App() {
             {/* Action Section */}
             <div className="space-y-4 relative z-10">
               <Button
-                className="w-full h-14 text-base font-black uppercase tracking-widest italic group/verified relative overflow-hidden bg-green-500 hover:bg-green-600 text-white border-none rounded-xl shadow-xl shadow-green-500/20"
+                className="w-full h-14 text-base font-black uppercase tracking-widest italic group/verified relative overflow-hidden bg-primary hover:bg-primary/90 text-white border-none rounded-xl shadow-xl shadow-primary/20"
                 onClick={() => {
                   setIsVerifiedPopupOpen(false);
                   document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' });
