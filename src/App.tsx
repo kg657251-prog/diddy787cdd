@@ -72,31 +72,40 @@ export default function App() {
   const [verifiedName, setVerifiedName] = useState<string | null>(null);
   const [isVerifiedPopupOpen, setIsVerifiedPopupOpen] = useState(false);
 
-  const handleVerify = () => {
-    if (!playerId || playerId.length < 5) {
-      toast.error('Invalid Player ID', { description: 'Please enter a valid BGMI Player ID.' });
+  const handleVerify = async () => {
+    if (!playerId || playerId.length < 8) {
+      toast.error('Invalid Player ID', { description: 'Please enter a valid BGMI Player ID (8-12 digits).' });
       return;
     }
     
     setIsVerifying(true);
     setVerifiedName(null);
     
-    // Simulate API call to fetch realistic name
-    setTimeout(() => {
-      const clans = ['亗SOUL', 'KING亗', 'OP', 'YT', 'Pro亗', 'GOD亗', 'IND亗', 'NINJA', 'DEAD', 'VORTEX'];
-      const names = ['Mortal', 'Scout', 'Dynamo', 'Jonathan', 'Snax', 'Mavi', 'Viper', 'Regaltos', 'Goblin', 'ClutchGod'];
-      
-      const idNum = parseInt(playerId.substring(0, 5)) || 0;
-      const clan = clans[idNum % clans.length];
-      const name = names[(idNum * 3) % names.length];
-      
-      const isPrefix = idNum % 2 === 0;
-      const mockName = isPrefix ? `${clan}${name}` : `${name}${clan}`;
-      
-      setVerifiedName(mockName);
+    try {
+      const response = await fetch('/api/verify-player', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.name) {
+        setVerifiedName(data.name);
+        setIsVerifiedPopupOpen(true);
+      } else {
+        toast.error('Player Not Found', { 
+          description: data.error || 'No account found with this UID. Please check and try again.' 
+        });
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      toast.error('Verification Failed', { 
+        description: 'Could not verify player ID. Please try again later.' 
+      });
+    } finally {
       setIsVerifying(false);
-      setIsVerifiedPopupOpen(true);
-    }, 1200);
+    }
   };
   const [livePurchases, setLivePurchases] = useState<{ id: string; uid: string; amount: number }[]>([]);
   const [recentPurchasesFeed, setRecentPurchasesFeed] = useState<{ id: string; uid: string; amount: number; time: string }[]>([]);
@@ -462,7 +471,8 @@ export default function App() {
                               </div>
                               <div className="flex flex-col">
                                 <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Player Verified</span>
-                                <span className="text-sm font-black text-foreground tracking-tight">UID: {playerId}</span>
+                                <span className="text-sm font-black text-foreground tracking-tight">{verifiedName}</span>
+                                <span className="text-[10px] text-muted-foreground font-mono">UID: {playerId}</span>
                               </div>
                             </div>
                           </motion.div>
@@ -900,6 +910,9 @@ export default function App() {
               className="relative z-10"
             >
               <h2 className="text-xl font-black tracking-tight text-foreground mb-1">Player ID Verified</h2>
+              {verifiedName && (
+                <p className="text-sm font-bold text-green-500 mb-1">{verifiedName}</p>
+              )}
               <p className="text-xs text-muted-foreground mb-6">UID: <span className="font-mono font-bold text-foreground/70">{playerId}</span></p>
 
               <Button
