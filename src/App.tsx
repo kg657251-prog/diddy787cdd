@@ -107,6 +107,14 @@ export default function App() {
       setIsVerifying(false);
     }
   };
+  const getStockForDate = (packageId: string) => {
+    if (packageId === 'uc-16200') return 0; // ₹999 pack is sold out
+    const date = new Date();
+    const seed = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+    const hash = Array.from(packageId).reduce((acc, char) => acc + char.charCodeAt(0), seed);
+    return (hash % 12) + 3; // Between 3 and 15 items
+  };
+
   const [livePurchases, setLivePurchases] = useState<{ id: string; uid: string; amount: number }[]>([]);
   const [recentPurchasesFeed, setRecentPurchasesFeed] = useState<{ id: string; uid: string; amount: number; time: string }[]>([]);
 
@@ -512,57 +520,85 @@ export default function App() {
                   </div>
                   <div className="pt-2">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
-                      {UC_PACKAGES.map((pkg, idx) => (
-                        <motion.button
-                          key={pkg.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.3, delay: 0.1 + idx * 0.05 }}
-                          whileHover={{ scale: 1.05, y: -5 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setSelectedPackage(pkg)}
-                          disabled={isProcessingPayment}
-                          className={cn(
-                            "relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all group/btn disabled:opacity-50 disabled:cursor-not-allowed touch-target",
-                            selectedPackage?.id === pkg.id 
-                              ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(34,197,94,0.3)]" 
-                              : "border-border/50 bg-background/50 hover:border-primary/30 hover:bg-primary/5"
-                          )}
-                        >
-                          {pkg.isPopular && (
-                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
-                              <Badge className="bg-primary text-primary-foreground text-[8px] px-2 py-0.5 uppercase font-black tracking-tighter shadow-lg shadow-primary/20 rounded-full">Popular</Badge>
+                      {UC_PACKAGES.map((pkg, idx) => {
+                        const stock = getStockForDate(pkg.id);
+                        const isSoldOut = stock === 0;
+                        
+                        return (
+                          <motion.button
+                            key={pkg.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.3, delay: 0.1 + idx * 0.05 }}
+                            whileHover={!isSoldOut ? { scale: 1.05, y: -5 } : {}}
+                            whileTap={!isSoldOut ? { scale: 0.95 } : {}}
+                            onClick={() => !isSoldOut && setSelectedPackage(pkg)}
+                            disabled={isProcessingPayment || isSoldOut}
+                            className={cn(
+                              "relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all group/btn disabled:opacity-80 disabled:cursor-not-allowed touch-target overflow-hidden",
+                              selectedPackage?.id === pkg.id 
+                                ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary),0.3)]" 
+                                : isSoldOut 
+                                  ? "border-destructive/20 bg-destructive/5 grayscale opacity-60"
+                                  : "border-border/50 bg-background/50 hover:border-primary/30 hover:bg-primary/5"
+                            )}
+                          >
+                            {pkg.isPopular && !isSoldOut && (
+                              <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
+                                <Badge className="bg-primary text-primary-foreground text-[8px] px-2 py-0.5 uppercase font-black tracking-tighter shadow-lg shadow-primary/20 rounded-full">Popular</Badge>
+                              </div>
+                            )}
+
+                            {isSoldOut && (
+                              <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center z-20">
+                                <div className="bg-destructive text-white text-[10px] font-black uppercase px-3 py-1 rotate-[-12deg] shadow-lg border border-white/20">
+                                  Sold Out
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="w-10 h-10 sm:w-14 sm:h-14 mb-1.5 sm:mb-2 relative">
+                              <img 
+                                src="https://i.ibb.co/LdZSDhwf/f5cb4b08e7501ad2a7f3423256672e29-removebg-preview.png" 
+                                alt="UC" 
+                                className={cn("w-full h-full object-contain drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]", isSoldOut && "opacity-50")}
+                                referrerPolicy="no-referrer"
+                              />
                             </div>
-                          )}
-                          <div className="w-10 h-10 sm:w-14 sm:h-14 mb-1.5 sm:mb-2 relative">
-                            <img 
-                              src="https://i.ibb.co/LdZSDhwf/f5cb4b08e7501ad2a7f3423256672e29-removebg-preview.png" 
-                              alt="UC" 
-                              className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]"
-                              referrerPolicy="no-referrer"
-                            />
-                          </div>
-                          <span className="text-sm sm:text-lg font-black tracking-tight">{pkg.amount} UC</span>
-                          {pkg.bonus && (
-                            <Badge variant="secondary" className="mt-1 text-[10px] bg-primary/20 text-primary border-primary/20 rounded-full px-2 py-0">
-                              +{pkg.bonus} Bonus
-                            </Badge>
-                          )}
-                          <div className="mt-3 text-sm font-bold text-muted-foreground group-hover/btn:text-foreground transition-colors">
-                            {pkg.currency} {pkg.price}
-                          </div>
-                          {selectedPackage?.id === pkg.id && (
-                            <motion.div 
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="absolute top-2 right-2"
-                            >
-                              <CheckCircle2 className="w-5 h-5 text-primary drop-shadow-md" />
-                            </motion.div>
-                          )}
-                        </motion.button>
-                      ))}
+                            <span className="text-sm sm:text-lg font-black tracking-tight">{pkg.amount} UC</span>
+                            
+                            <div className="flex flex-col items-center gap-1 mt-1">
+                              {pkg.bonus && !isSoldOut && (
+                                <Badge variant="secondary" className="text-[10px] bg-primary/20 text-primary border-primary/20 rounded-full px-2 py-0">
+                                  +{pkg.bonus} Bonus
+                                </Badge>
+                              )}
+                              
+                              {!isSoldOut && (
+                                <div className="flex items-center gap-1">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                  <span className="text-[9px] font-bold text-amber-500/80 uppercase tracking-tighter">{stock} left in stock</span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="mt-3 text-sm font-bold text-muted-foreground group-hover/btn:text-foreground transition-colors">
+                              {pkg.currency} {pkg.price}
+                            </div>
+                            
+                            {selectedPackage?.id === pkg.id && !isSoldOut && (
+                              <motion.div 
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute top-2 right-2"
+                              >
+                                <CheckCircle2 className="w-5 h-5 text-primary drop-shadow-md" />
+                              </motion.div>
+                            )}
+                          </motion.button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
