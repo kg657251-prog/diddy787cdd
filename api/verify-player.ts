@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Validate format: 8-12 digit numeric string
-  if (playerId.length < 8 || playerId.length > 12 || !/^\\d+$/.test(playerId)) {
+  if (playerId.length < 8 || playerId.length > 12 || !/^\d+$/.test(playerId)) {
     return res.status(400).json({ 
       success: false, 
       error: "Invalid Player ID format. Must be 8-12 digits." 
