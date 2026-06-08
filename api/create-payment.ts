@@ -73,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
 
     console.log(`[create-payment] Initiating payment request to ${GATEWAY_CONFIG.baseUrl}`);
-    console.log(`[create-payment] Order: ${merchantOrderNo}, Amount: ₹${formattedAmount}, Callback: ${callbackUrl}`);
+    console.log(`[create-payment] Order: ${merchantOrderNo}, Amount: \u20b9${formattedAmount}, Callback: ${callbackUrl}`);
 
     const response = await axios.post(GATEWAY_CONFIG.baseUrl, requestBody, {
       timeout: 10000, // 10s timeout
