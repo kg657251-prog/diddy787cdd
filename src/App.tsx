@@ -545,7 +545,7 @@ export default function App() {
                             </div>
                           </motion.div>
                         )}
-                      </AnPresence>
+                      </AnimatePresence>
                       <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/30 p-3 border border-border/50">
                         <Info className="w-4 h-4 mt-0.5 shrink-0" />
                         <p>To find your Player ID, open BGMI, click on your profile icon in the top-left corner. Your Player ID is listed under your nickname.</p>
