@@ -243,20 +243,20 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6 sm:gap-8 min-w-0">
-            <div className="relative w-28 sm:w-40 h-8 sm:h-10 flex items-center">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 -ml-3 sm:-ml-4">
+            <div className="relative w-24 sm:w-40 h-7 sm:h-10 overflow-hidden flex items-center justify-center">
               <img 
                 src="https://files.catbox.moe/v8wz90.png" 
                 alt="CardingUC Logo" 
                 aria-label="CardingUC Official Logo"
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-auto scale-[2.5] sm:scale-[3] origin-left object-contain drop-shadow-[0_2px_15px_rgba(255,255,255,0.15)]"
+                className="absolute max-w-none w-[250%] sm:w-[250%] h-auto object-center drop-shadow-[0_2px_12px_rgba(139,92,246,0.3)] hover:drop-shadow-[0_2px_20px_rgba(139,92,246,0.5)] transition-all duration-300"
                 referrerPolicy="no-referrer"
               />
             </div>
-            <div className="flex flex-col min-w-0 justify-center pt-1">
-              <div className="flex items-center gap-1">
+            <div className="flex flex-col min-w-0 justify-center">
+              <div className="flex items-center gap-1 bg-green-500/10 rounded-full px-2 py-0.5 border border-green-500/20">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[9px] sm:text-[10px] font-bold text-green-500 uppercase tracking-widest whitespace-nowrap">Server Active</span>
+                <span className="text-[8px] sm:text-[9px] font-semibold text-green-400 uppercase tracking-wider whitespace-nowrap">Live</span>
               </div>
             </div>
           </div>
