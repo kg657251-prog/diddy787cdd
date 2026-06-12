@@ -243,14 +243,16 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <img 
-              src="https://files.catbox.moe/v8wz90.png" 
-              alt="CardingUC Logo" 
-              aria-label="CardingUC Official Logo"
-              className="w-auto h-7 sm:h-10 object-contain drop-shadow-[0_2px_15px_rgba(255,255,255,0.15)]"
-              referrerPolicy="no-referrer"
-            />
+          <div className="flex items-center gap-6 sm:gap-8 min-w-0">
+            <div className="relative w-28 sm:w-40 h-8 sm:h-10 flex items-center">
+              <img 
+                src="https://files.catbox.moe/v8wz90.png" 
+                alt="CardingUC Logo" 
+                aria-label="CardingUC Official Logo"
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-auto scale-[2.5] sm:scale-[3] origin-left object-contain drop-shadow-[0_2px_15px_rgba(255,255,255,0.15)]"
+                referrerPolicy="no-referrer"
+              />
+            </div>
             <div className="flex flex-col min-w-0 justify-center pt-1">
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
