@@ -244,12 +244,12 @@ export default function App() {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="flex items-center justify-start -ml-2 sm:-ml-6">
+            <div className="flex items-center justify-start -ml-4 sm:-ml-8">
               <img 
                 src="https://files.catbox.moe/v8wz90.png" 
                 alt="CardingUC Logo" 
                 aria-label="CardingUC Official Logo"
-                className="w-[180px] sm:w-[240px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.4)] hover:drop-shadow-[0_2px_20px_rgba(139,92,246,0.6)] transition-all duration-300"
+                className="w-[220px] sm:w-[300px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.4)] hover:drop-shadow-[0_2px_20px_rgba(139,92,246,0.6)] transition-all duration-300"
                 referrerPolicy="no-referrer"
               />
             </div>
@@ -991,26 +991,26 @@ export default function App() {
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 sm:gap-8 mb-12">
-            <div className="col-span-1 sm:col-span-2">
-              <div className="flex items-center gap-3 mb-6 -ml-2 sm:-ml-4">
+            <div className="col-span-1 sm:col-span-2 flex flex-col justify-center">
+              <div className="flex items-center gap-3 mb-2 -ml-3 sm:-ml-6">
                 <img 
                   src="https://files.catbox.moe/v8wz90.png" 
                   alt="CardingUC Logo" 
-                  className="w-[180px] sm:w-[240px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.2)]"
+                  className="w-[220px] sm:w-[280px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.3)]"
                   referrerPolicy="no-referrer"
                 />
               </div>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mb-8">
+              <p className="text-muted-foreground/80 text-sm leading-relaxed max-w-sm mb-6">
                 The most trusted and fastest growing platform for BGMI UC top-ups in India. We guarantee lightning-fast delivery, bank-grade secure payments, and the most competitive prices in the market.
               </p>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-full border border-border/50 text-xs font-bold text-muted-foreground shadow-sm">
-                  <ShieldCheck className="w-4 h-4 text-green-500" />
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-white/90 shadow-lg shadow-black/20">
+                  <ShieldCheck className="w-4 h-4 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
                   100% Safe
                 </div>
-                <div className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-full border border-border/50 text-xs font-bold text-muted-foreground shadow-sm">
-                  <Zap className="w-4 h-4 text-amber-500" />
-                  Instant
+                <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-white/90 shadow-lg shadow-black/20">
+                  <Zap className="w-4 h-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+                  Instant Delivery
                 </div>
               </div>
             </div>
