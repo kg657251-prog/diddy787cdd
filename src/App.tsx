@@ -244,12 +244,12 @@ export default function App() {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="flex items-center justify-start -ml-1 sm:-ml-4">
+            <div className="flex items-center justify-start -ml-2 sm:-ml-6">
               <img 
                 src="https://files.catbox.moe/v8wz90.png" 
                 alt="CardingUC Logo" 
                 aria-label="CardingUC Official Logo"
-                className="w-[140px] sm:w-[180px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.4)] hover:drop-shadow-[0_2px_20px_rgba(139,92,246,0.6)] transition-all duration-300"
+                className="w-[180px] sm:w-[240px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.4)] hover:drop-shadow-[0_2px_20px_rgba(139,92,246,0.6)] transition-all duration-300"
                 referrerPolicy="no-referrer"
               />
             </div>
@@ -992,10 +992,13 @@ export default function App() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 sm:gap-8 mb-12">
             <div className="col-span-1 sm:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <span className="text-2xl sm:text-3xl font-black tracking-tighter uppercase italic bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-                  CARDINGUC.COM
-                </span>
+              <div className="flex items-center gap-3 mb-6 -ml-2 sm:-ml-4">
+                <img 
+                  src="https://files.catbox.moe/v8wz90.png" 
+                  alt="CardingUC Logo" 
+                  className="w-[180px] sm:w-[240px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.2)]"
+                  referrerPolicy="no-referrer"
+                />
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mb-8">
                 The most trusted and fastest growing platform for BGMI UC top-ups in India. We guarantee lightning-fast delivery, bank-grade secure payments, and the most competitive prices in the market.
