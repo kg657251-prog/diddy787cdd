@@ -243,20 +243,20 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 -ml-3 sm:-ml-4">
-            <div className="relative w-24 sm:w-40 h-7 sm:h-10 overflow-hidden flex items-center justify-center">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="flex items-center justify-start -ml-1 sm:-ml-4">
               <img 
                 src="https://files.catbox.moe/v8wz90.png" 
                 alt="CardingUC Logo" 
                 aria-label="CardingUC Official Logo"
-                className="absolute max-w-none w-[250%] sm:w-[250%] h-auto object-center drop-shadow-[0_2px_12px_rgba(139,92,246,0.3)] hover:drop-shadow-[0_2px_20px_rgba(139,92,246,0.5)] transition-all duration-300"
+                className="w-[140px] sm:w-[180px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.4)] hover:drop-shadow-[0_2px_20px_rgba(139,92,246,0.6)] transition-all duration-300"
                 referrerPolicy="no-referrer"
               />
             </div>
             <div className="flex flex-col min-w-0 justify-center">
-              <div className="flex items-center gap-1 bg-green-500/10 rounded-full px-2 py-0.5 border border-green-500/20">
+              <div className="flex items-center gap-1 bg-green-500/10 rounded-full px-2 py-0.5 border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.1)]">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[8px] sm:text-[9px] font-semibold text-green-400 uppercase tracking-wider whitespace-nowrap">Live</span>
+                <span className="text-[8px] sm:text-[9px] font-bold text-green-400 uppercase tracking-wider whitespace-nowrap">Live</span>
               </div>
             </div>
           </div>
