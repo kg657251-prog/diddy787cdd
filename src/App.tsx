@@ -243,19 +243,18 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <img 
-              src="/favicon.svg" 
+              src="https://files.catbox.moe/v8wz90.png" 
               alt="CardingUC Logo" 
               aria-label="CardingUC Official Logo"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-lg shadow-primary/20 object-cover border border-primary/20"
+              className="w-auto h-7 sm:h-10 object-contain drop-shadow-[0_2px_15px_rgba(255,255,255,0.15)]"
               referrerPolicy="no-referrer"
             />
-            <div className="flex flex-col min-w-0">
-              <span className="text-base sm:text-lg md:text-xl font-black tracking-tighter uppercase italic truncate bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/40">cardinguc.com</span>
+            <div className="flex flex-col min-w-0 justify-center pt-1">
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[9px] sm:text-[10px] font-bold text-green-500 uppercase tracking-widest">Server Active</span>
+                <span className="text-[9px] sm:text-[10px] font-bold text-green-500 uppercase tracking-widest whitespace-nowrap">Server Active</span>
               </div>
             </div>
           </div>
@@ -662,7 +661,7 @@ export default function App() {
                       <div className="flex items-center justify-center gap-2">
                         <ShieldCheck className="w-4 h-4 text-primary/60" />
                         <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-medium opacity-80">
-                          Instantly Delivery \u2022 Secure Encryption \u2022 24/7 Support
+                          Instantly Delivery • Secure Encryption • 24/7 Support
                         </p>
                       </div>
                     </div>
@@ -1034,7 +1033,7 @@ export default function App() {
           <Separator className="mb-8 bg-primary/10" />
           
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground uppercase tracking-widest font-bold">
-            <p className="opacity-80">\u00a9 2026 CARDINGUC.COM. ALL RIGHTS RESERVED.</p>
+            <p className="opacity-80">© 2026 CARDINGUC.COM. ALL RIGHTS RESERVED.</p>
             <div className="flex items-center gap-4 opacity-80">
               <span className="flex items-center gap-1.5"><Gamepad2 className="w-3.5 h-3.5 text-primary" /> Made for Gamers</span>
               <Separator orientation="vertical" className="h-4 bg-primary/20" />
