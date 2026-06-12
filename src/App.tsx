@@ -981,67 +981,71 @@ export default function App() {
 
 
       {/* Footer */}
-      {/* Footer */}
-      <footer className="mt-12 md:mt-20 border-t border-primary/20 bg-gradient-to-b from-background to-primary/5 py-10 md:py-16 relative overflow-hidden">
-        {/* Engaging Background Elements */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <footer className="mt-12 md:mt-20 border-t border-border/30 bg-background py-12 md:py-16 relative overflow-hidden">
+        {/* Subtle Ambient Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none opacity-50" />
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 sm:gap-8 mb-12">
-            <div className="col-span-1 sm:col-span-2 flex flex-col justify-center">
-              <div className="flex items-center gap-3 mb-2 -ml-3 sm:-ml-6">
-                <img 
-                  src="https://files.catbox.moe/zded08.png" 
-                  alt="CardingUC Logo" 
-                  className="w-[220px] sm:w-[280px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.3)]"
-                  referrerPolicy="no-referrer"
-                />
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8 mb-16">
+            <div className="col-span-1 md:col-span-6 flex flex-col justify-center">
+              <div className="mb-6">
+                <h3 className="text-2xl sm:text-3xl font-black uppercase italic tracking-tighter text-foreground mb-3">
+                  CARDING<span className="text-primary">UC</span>
+                </h3>
+                <p className="text-muted-foreground/70 text-sm leading-relaxed max-w-md">
+                  India's premier destination for instant BGMI UC top-ups. We deliver lightning-fast processing, bank-grade security, and unmatched reliability for gamers nationwide.
+                </p>
               </div>
-              <p className="text-muted-foreground/80 text-sm leading-relaxed max-w-sm mb-6">
-                The most trusted and fastest growing platform for BGMI UC top-ups in India. We guarantee lightning-fast delivery, bank-grade secure payments, and the most competitive prices in the market.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-white/90 shadow-lg shadow-black/20">
-                  <ShieldCheck className="w-4 h-4 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
-                  100% Safe
+              
+              <div className="flex flex-col gap-3 text-sm font-medium text-muted-foreground/80">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                    <ShieldCheck className="w-3 h-3 text-green-500" />
+                  </div>
+                  100% Safe & Official Process
                 </div>
-                <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-white/90 shadow-lg shadow-black/20">
-                  <Zap className="w-4 h-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
-                  Instant Delivery
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                    <Zap className="w-3 h-3 text-amber-500" />
+                  </div>
+                  Instant Automated Delivery
                 </div>
               </div>
             </div>
             
-            <div>
-              <h4 className="font-bold uppercase tracking-wider text-sm mb-4 text-foreground">Quick Links</h4>
-              <ul className="space-y-3 text-sm text-muted-foreground font-medium">
-                <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary/50" />About Us</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary/50" />Terms & Conditions</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary/50" />Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary/50" />Refund Policy</a></li>
+            <div className="col-span-1 md:col-span-3 md:pl-8">
+              <h4 className="font-bold uppercase tracking-widest text-xs mb-6 text-foreground/90">Company</h4>
+              <ul className="space-y-4 text-sm text-muted-foreground/70 font-medium">
+                <li><a href="#" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> About Us</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> Terms & Conditions</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> Refund Policy</a></li>
               </ul>
             </div>
             
-            <div>
-              <h4 className="font-bold uppercase tracking-wider text-sm mb-4 text-foreground">Support</h4>
-              <ul className="space-y-3 text-sm text-muted-foreground font-medium">
-                <li><a href="#support" className="hover:text-primary transition-colors flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary/50" />Help Center</a></li>
-                <li><a href="https://t.me/+14347328402" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-2"><TelegramIcon className="w-3 h-3 text-sky-500" />Telegram Support</a></li>
-                <li><a href="#support" className="hover:text-primary transition-colors flex items-center gap-2"><Info className="w-3 h-3 text-primary/50" />FAQ</a></li>
+            <div className="col-span-1 md:col-span-3">
+              <h4 className="font-bold uppercase tracking-widest text-xs mb-6 text-foreground/90">Support</h4>
+              <ul className="space-y-4 text-sm text-muted-foreground/70 font-medium">
+                <li><a href="#support" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> Help Center</a></li>
+                <li>
+                  <a href="https://t.me/+14347328402" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-sky-500/10 flex items-center justify-center">
+                      <TelegramIcon className="w-3 h-3 text-sky-500" />
+                    </div>
+                    Telegram Support
+                  </a>
+                </li>
+                <li><a href="#support" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> FAQ</a></li>
               </ul>
             </div>
           </div>
           
-          <Separator className="mb-8 bg-primary/10" />
-          
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground uppercase tracking-widest font-bold">
-            <p className="opacity-80">© 2026 CARDINGUC.COM. ALL RIGHTS RESERVED.</p>
-            <div className="flex items-center gap-4 opacity-80">
-              <span className="flex items-center gap-1.5"><Gamepad2 className="w-3.5 h-3.5 text-primary" /> Made for Gamers</span>
-              <Separator orientation="vertical" className="h-4 bg-primary/20" />
-              <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-green-500" /> Secure SSL</span>
+          <div className="border-t border-border/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] sm:text-xs text-muted-foreground/50 uppercase tracking-widest font-bold">
+            <p>Copyright © 2026 CARDINGUC. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5"><Gamepad2 className="w-3.5 h-3.5" /> Gamers First</span>
+              <div className="w-1 h-1 rounded-full bg-border/50" />
+              <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> SSL Secured</span>
             </div>
           </div>
         </div>
