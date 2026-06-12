@@ -246,7 +246,7 @@ export default function App() {
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="flex items-center justify-start -ml-4 sm:-ml-8">
               <img 
-                src="https://files.catbox.moe/v8wz90.png" 
+                src="https://files.catbox.moe/zded08.png" 
                 alt="CardingUC Logo" 
                 aria-label="CardingUC Official Logo"
                 className="w-[220px] sm:w-[300px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.4)] hover:drop-shadow-[0_2px_20px_rgba(139,92,246,0.6)] transition-all duration-300"
@@ -994,7 +994,7 @@ export default function App() {
             <div className="col-span-1 sm:col-span-2 flex flex-col justify-center">
               <div className="flex items-center gap-3 mb-2 -ml-3 sm:-ml-6">
                 <img 
-                  src="https://files.catbox.moe/v8wz90.png" 
+                  src="https://files.catbox.moe/zded08.png" 
                   alt="CardingUC Logo" 
                   className="w-[220px] sm:w-[280px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.3)]"
                   referrerPolicy="no-referrer"
