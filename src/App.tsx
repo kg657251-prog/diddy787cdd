@@ -990,7 +990,7 @@ export default function App() {
             <div className="col-span-1 md:col-span-6 flex flex-col justify-center">
               <div className="mb-6">
                 <h3 className="text-2xl sm:text-3xl font-black uppercase italic tracking-tighter text-foreground mb-3">
-                  CARDING<span className="text-primary">UC</span>
+                  CARDING <span className="text-primary">UC</span>
                 </h3>
                 <p className="text-muted-foreground/70 text-sm leading-relaxed max-w-md">
                   India's premier destination for instant BGMI UC top-ups. We deliver lightning-fast processing, bank-grade security, and unmatched reliability for gamers nationwide.
