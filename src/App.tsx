@@ -243,26 +243,19 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="flex items-center justify-start gap-2 sm:gap-3 -ml-1 sm:-ml-2">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="flex items-center justify-start -ml-1 sm:-ml-2">
               <img 
                 src="https://files.catbox.moe/rcy9gr.jpg" 
                 alt="CU Icon" 
-                className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg object-cover drop-shadow-[0_2px_10px_rgba(255,255,255,0.15)] hover:drop-shadow-[0_2px_16px_rgba(255,255,255,0.25)] transition-all duration-300"
-                referrerPolicy="no-referrer"
-              />
-              <img 
-                src="https://files.catbox.moe/zded08.png" 
-                alt="CardingUC Logo" 
-                aria-label="CardingUC Official Logo"
-                className="w-[160px] sm:w-[220px] h-auto object-contain drop-shadow-[0_2px_12px_rgba(139,92,246,0.4)] hover:drop-shadow-[0_2px_20px_rgba(139,92,246,0.6)] transition-all duration-300"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover drop-shadow-[0_2px_10px_rgba(255,255,255,0.15)] hover:drop-shadow-[0_2px_16px_rgba(255,255,255,0.25)] transition-all duration-300"
                 referrerPolicy="no-referrer"
               />
             </div>
             <div className="flex flex-col min-w-0 justify-center">
-              <div className="flex items-center gap-1 bg-green-500/10 rounded-full px-2 py-0.5 border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.1)]">
+              <div className="flex items-center gap-1.5 bg-green-500/10 rounded-full px-2.5 py-1 border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.1)]">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[8px] sm:text-[9px] font-bold text-green-400 uppercase tracking-wider whitespace-nowrap">Live</span>
+                <span className="text-[9px] sm:text-[10px] font-bold text-green-400 uppercase tracking-wider whitespace-nowrap">Server Active</span>
               </div>
             </div>
           </div>
