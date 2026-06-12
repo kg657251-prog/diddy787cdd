@@ -662,7 +662,7 @@ export default function App() {
                       <div className="flex items-center justify-center gap-2">
                         <ShieldCheck className="w-4 h-4 text-primary/60" />
                         <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-medium opacity-80">
-                          Instantly Delivery • Secure Encryption • 24/7 Support
+                          Instant Delivery • Bank-Grade Encryption • 24/7 Live Support
                         </p>
                       </div>
                     </div>
