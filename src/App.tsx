@@ -6,6 +6,7 @@ import {
   CheckCircle2, 
   ChevronRight,
   Info,
+  Shield,
   ShieldCheck,
   Zap,
   Loader2,
@@ -660,7 +661,7 @@ export default function App() {
                         </Button>
                       </div>
                       <div className="flex items-center justify-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-primary/60" />
+                        <Shield className="w-4 h-4 text-primary/60" />
                         <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-medium opacity-80">
                           Instant Delivery • Bank-Grade Encryption • 24/7 Live Support
                         </p>
@@ -849,7 +850,7 @@ export default function App() {
                 <Button 
                   className="w-full sm:w-auto h-12 px-8 font-bold uppercase tracking-wider gap-2 ml-0 sm:ml-4 shadow-lg shadow-green-500/20 bg-[#25D366] hover:bg-[#20bd5a] border-none text-white" 
                   render={
-                    <a href="https://wa.me/+918090034774" target="_blank" rel="noopener noreferrer">
+                    <a href="https://wa.me/+919304604615" target="_blank" rel="noopener noreferrer">
                       <WhatsAppIcon className="w-5 h-5 text-white" />
                       WhatsApp Support
                     </a>
@@ -1053,7 +1054,7 @@ export default function App() {
 
       {/* Floating WhatsApp Button */}
       <motion.a
-        href="https://wa.me/+918090034774"
+        href="https://wa.me/+919304604615"
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0, opacity: 0 }}
