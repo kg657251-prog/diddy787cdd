@@ -850,7 +850,7 @@ export default function App() {
                 <Button 
                   className="w-full sm:w-auto h-12 px-8 font-bold uppercase tracking-wider gap-2 ml-0 sm:ml-4 shadow-lg shadow-green-500/20 bg-[#25D366] hover:bg-[#20bd5a] border-none text-white" 
                   render={
-                    <a href="https://wa.me/+919304604615" target="_blank" rel="noopener noreferrer">
+                    <a href="https://wa.me/+919135668874" target="_blank" rel="noopener noreferrer">
                       <WhatsAppIcon className="w-5 h-5 text-white" />
                       WhatsApp Support
                     </a>
@@ -1054,7 +1054,7 @@ export default function App() {
 
       {/* Floating WhatsApp Button */}
       <motion.a
-        href="https://wa.me/+919304604615"
+        href="https://wa.me/+919135668874"
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0, opacity: 0 }}
