@@ -200,7 +200,8 @@ export default function App() {
           price: selectedPackage.price,
           name: 'N/A',
           email: 'not-provided@cardinguc.com',
-          phone: '0000000000'
+          phone: '0000000000',
+          paymentMethod: selectedPayment.id
         }),
       });
 
@@ -660,11 +661,16 @@ export default function App() {
                           />
                         </Button>
                       </div>
-                      <div className="flex items-center justify-center gap-2">
-                        <Shield className="w-4 h-4 text-primary/60" />
-                        <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-medium opacity-80">
-                          Instant Delivery • Bank-Grade Encryption • 24/7 Live Support
-                        </p>
+                      <div className="flex items-center justify-center gap-4">
+                        <div className="flex items-center gap-1.5 opacity-90">
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">SECURE PAYMENT</span>
+                        </div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-border/50" />
+                        <div className="flex items-center gap-1.5 opacity-90">
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">INSTANT SERVICE</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -981,6 +987,7 @@ export default function App() {
       </Dialog>
 
 
+      {/* Footer */}
       {/* Footer */}
       <footer className="mt-12 md:mt-20 border-t border-border/30 bg-background py-12 md:py-16 relative overflow-hidden">
         {/* Subtle Ambient Glow */}
