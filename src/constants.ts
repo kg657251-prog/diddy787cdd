@@ -25,4 +25,5 @@ export const UC_PACKAGES: UCPackage[] = [
 
 export const PAYMENT_METHODS: PaymentMethod[] = [
   { id: 'upi', name: 'UPI Payment Gateway', icon: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg', description: 'Pay using any UPI app (PhonePe, Google Pay, Paytm, etc.)' },
+  { id: 'gpay', name: 'GPay', icon: 'https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg', description: 'Pay quickly and securely using Google Pay' },
 ];
