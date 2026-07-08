@@ -749,7 +749,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                className="bg-card/95 backdrop-blur-md border border-primary/20 p-2 md:p-2.5 rounded-lg shadow-xl shadow-primary/10 flex items-center gap-2.5 min-w-[180px] md:minw-[220px] relative pointer-events-auto"
+                className="bg-card/95 backdrop-blur-md border border-primary/20 p-2 md:p-2.5 rounded-lg shadow-xl shadow-primary/10 flex items-center gap-2.5 min-w-[180px] md:min-w-[220px] relative pointer-events-auto"
               >
                 <button 
                   onClick={() => setLivePurchases([])}
@@ -1059,19 +1059,19 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Floating WhatsApp Button */}
+      {/* Floating Telegram Button */}
       <motion.a
-        href="https://wa.me/+919118900229"
+        href="https://t.me/+14347328402"
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        className="fixed bottom-4 right-3 sm:right-4 md:bottom-6 md:right-6 z-[60] w-14 h-14 md:w-16 md:h-16 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgb(37,211,102,0.4)] border border-white/20 transition-all touch-target safe-bottom"
+        className="fixed bottom-4 right-3 sm:right-4 md:bottom-6 md:right-6 z-[60] w-14 h-14 md:w-16 md:h-16 bg-[#0088cc] text-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgb(0,136,204,0.4)] border border-white/20 transition-all touch-target safe-bottom"
       >
-        <WhatsAppIcon className="w-8 h-8 md:w-10 md:h-10" />
-        <div className="absolute inset-0 rounded-full border-2 border-[#25D366] animate-ping opacity-30" />
+        <TelegramIcon className="w-7 h-7 md:w-9 md:h-9 -ml-1 mt-1" />
+        <div className="absolute inset-0 rounded-full border-2 border-[#0088cc] animate-ping opacity-30" />
       </motion.a>
     </div>
   );
