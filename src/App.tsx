@@ -1070,7 +1070,7 @@ export default function App() {
         whileTap={{ scale: 0.9 }}
         className="fixed bottom-4 right-3 sm:right-4 md:bottom-6 md:right-6 z-[60] w-14 h-14 md:w-16 md:h-16 bg-[#0088cc] text-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgb(0,136,204,0.4)] border border-white/20 transition-all touch-target safe-bottom"
       >
-        <TelegramIcon className="w-7 h-7 md:w-9 md:h-9 -ml-1 mt-1" />
+        <TelegramIcon className="w-8 h-8 md:w-10 md:h-10 shrink-0" />
         <div className="absolute inset-0 rounded-full border-2 border-[#0088cc] animate-ping opacity-30" />
       </motion.a>
     </div>
