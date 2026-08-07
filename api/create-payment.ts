@@ -2,9 +2,8 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createHmac } from 'crypto';
 import axios from 'axios';
 
-// SunPays Fire credentials
 const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || 'ecee0739b16abec50862a78185b881e3f1772c8bd5dced5b';
-const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || '59750f656226f2dbb23518500a3c99a8f3207bdab4f3964c20ac891';
+const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || '59750f656226f2dbb23518500a3c99a8f3207bdab4f3964c20ac89170628c105';
 const SUNPAYS_BASE_URL = 'https://sunpaytm.quest/api/public/v1/payins';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -16,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { playerId, packageId, price, name, email, phone } = req.body;
+    const { playerId, packageId, price, name, email, phone, paymentMethod } = req.body;
 
     if (!playerId || !packageId || !price) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -28,12 +27,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     const orderId = `CUC${Date.now()}${randomSuffix}`;
-    const formattedAmount = parseFloat(price);
 
-    // Build body object - matches SunPays docs exactly
+    // Amount as integer (paise or rupees? docs say 2500 = Rs.2500, so it's rupees as number)
+    const amount = Math.round(parseFloat(price));
+
+    // Build exact minimal body matching SunPays docs example
     const bodyObj: Record<string, any> = {
       order_id: orderId,
-      amount: formattedAmount,
+      amount: amount,
       currency: 'INR',
       method: 'upi',
       customer_name: name || 'BGMI Player',
@@ -43,34 +44,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       metadata: { player_id: playerId, package_id: packageId }
     };
 
-    // CRITICAL: Stringify ONCE — use this exact string for BOTH signature and request body
+    // Stringify ONCE — sign this exact string
     const rawBody = JSON.stringify(bodyObj);
 
-    // HMAC-SHA256(rawBody, api_secret) as hex
-    const signature = createHmac('sha256', SUNPAYS_API_SECRET)
+    // Compute HMAC-SHA256 signature
+    const signature = createHmac('sha256', SUNPAYS_API_SECRET.trim())
       .update(rawBody)
       .digest('hex');
 
-    console.log(`[SunPays] Order: ${orderId} | Amount: ${formattedAmount} | URL: ${SUNPAYS_BASE_URL}`);
-    console.log(`[SunPays] Raw body: ${rawBody}`);
-    console.log(`[SunPays] Signature: ${signature}`);
+    console.log('[SunPays] Order ID:', orderId);
+    console.log('[SunPays] Amount:', amount);
+    console.log('[SunPays] Signature:', signature);
 
-    // Send the EXACT same rawBody string — do NOT let axios re-serialize
+    // Pass rawBody as string so axios sends it byte-for-byte as signed
     const response = await axios.post(SUNPAYS_BASE_URL, rawBody, {
       timeout: 20000,
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': SUNPAYS_API_KEY,
+        'x-api-key': SUNPAYS_API_KEY.trim(),
         'x-signature': signature,
       },
       validateStatus: () => true,
     });
 
     const data = response.data;
-    console.log(`[SunPays] HTTP Status: ${response.status}`);
-    console.log(`[SunPays] Response: ${JSON.stringify(data)}`);
+    console.log('[SunPays] HTTP Status:', response.status);
+    console.log('[SunPays] Response:', JSON.stringify(data));
 
-    // Extract checkout URL from any field SunPays returns it in
     const checkoutUrl =
       data?.checkout_url ||
       data?.payment_url ||
@@ -79,15 +79,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       data?.merchant_gateway_payment_url;
 
     if ((response.status === 200 || response.status === 201) && checkoutUrl) {
-      return res.status(200).json({
-        success: true,
-        paymentUrl: checkoutUrl,
-        orderId,
-      });
+      return res.status(200).json({ success: true, paymentUrl: checkoutUrl, orderId });
     }
 
     const errorMsg = data?.message || data?.error || data?.detail || `Gateway error (HTTP ${response.status})`;
-    console.error(`[SunPays] Error: ${errorMsg}`);
+    console.error('[SunPays] Error:', errorMsg, '| Full response:', JSON.stringify(data));
     return res.status(200).json({ success: false, error: errorMsg, orderId });
 
   } catch (error: any) {
