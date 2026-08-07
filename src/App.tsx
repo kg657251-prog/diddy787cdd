@@ -74,7 +74,8 @@ export default function App() {
   const [isVerifiedPopupOpen, setIsVerifiedPopupOpen] = useState(false);
 
   const handleVerify = async () => {
-    if (!playerId || playerId.length < 8 || playerId.length > 12 || !/^\d+$/.test(playerId)) {
+    const trimmedId = playerId.trim();
+    if (!trimmedId || trimmedId.length < 8 || trimmedId.length > 12 || !/^\d+$/.test(trimmedId)) {
       toast.error('Invalid Player ID', { description: 'Please enter a valid BGMI Player ID (8-12 digits).' });
       return;
     }
@@ -413,7 +414,8 @@ export default function App() {
                             )}
                             value={playerId}
                             onChange={(e) => {
-                              setPlayerId(e.target.value);
+                              const value = e.target.value.replace(/\D/g, '');
+                              setPlayerId(value);
                               setVerifiedName(null);
                             }}
                             inputMode="numeric"
