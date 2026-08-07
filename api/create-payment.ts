@@ -7,11 +7,6 @@ const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || 'ecee0739b16abec50862a781
 const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || '59750f656226f2dbb23518500a3c99a8f3207bdab4f3964c20ac891';
 const SUNPAYS_BASE_URL = 'https://sunpaytm.quest/api/public/v1/payins';
 
-function generateSignature(body: object, secret: string): string {
-  const bodyStr = JSON.stringify(body);
-  return createHmac('sha256', secret).update(bodyStr).digest('hex');
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -21,7 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { playerId, packageId, amount, price, name, email, phone, paymentMethod } = req.body;
+    const { playerId, packageId, price, name, email, phone } = req.body;
 
     if (!playerId || !packageId || !price) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -35,9 +30,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const orderId = `CUC${Date.now()}${randomSuffix}`;
     const formattedAmount = parseFloat(price);
 
-    const notifyUrl = `${siteUrl}/api/payment-callback`;
-
-    const requestBody: Record<string, any> = {
+    // Build body object - matches SunPays docs exactly
+    const bodyObj: Record<string, any> = {
       order_id: orderId,
       amount: formattedAmount,
       currency: 'INR',
@@ -45,19 +39,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       customer_name: name || 'BGMI Player',
       customer_phone: phone || '9999999999',
       customer_email: email || 'player@cardinguc.com',
-      notify_url: notifyUrl,
-      metadata: {
-        player_id: playerId,
-        package_id: packageId,
-      }
+      notify_url: `${siteUrl}/api/payment-callback`,
+      metadata: { player_id: playerId, package_id: packageId }
     };
 
-    const signature = generateSignature(requestBody, SUNPAYS_API_SECRET);
+    // CRITICAL: Stringify ONCE — use this exact string for BOTH signature and request body
+    const rawBody = JSON.stringify(bodyObj);
 
-    console.log(`[SunPays] Creating order: ${orderId}, Amount: Rs.${formattedAmount}`);
-    console.log(`[SunPays] POST to: ${SUNPAYS_BASE_URL}`);
+    // HMAC-SHA256(rawBody, api_secret) as hex
+    const signature = createHmac('sha256', SUNPAYS_API_SECRET)
+      .update(rawBody)
+      .digest('hex');
 
-    const response = await axios.post(SUNPAYS_BASE_URL, requestBody, {
+    console.log(`[SunPays] Order: ${orderId} | Amount: ${formattedAmount} | URL: ${SUNPAYS_BASE_URL}`);
+    console.log(`[SunPays] Raw body: ${rawBody}`);
+    console.log(`[SunPays] Signature: ${signature}`);
+
+    // Send the EXACT same rawBody string — do NOT let axios re-serialize
+    const response = await axios.post(SUNPAYS_BASE_URL, rawBody, {
       timeout: 20000,
       headers: {
         'Content-Type': 'application/json',
@@ -68,10 +67,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     const data = response.data;
-    console.log(`[SunPays] Status: ${response.status}`);
+    console.log(`[SunPays] HTTP Status: ${response.status}`);
     console.log(`[SunPays] Response: ${JSON.stringify(data)}`);
 
-    // SunPays returns 201 with checkout_url on success
+    // Extract checkout URL from any field SunPays returns it in
     const checkoutUrl =
       data?.checkout_url ||
       data?.payment_url ||
@@ -83,21 +82,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({
         success: true,
         paymentUrl: checkoutUrl,
-        orderId: orderId,
+        orderId,
       });
     }
 
-    const errorMsg = data?.message || data?.error || data?.detail || `Gateway error (${response.status})`;
-    console.error(`[SunPays] Error response:`, errorMsg);
-    return res.status(200).json({
-      success: false,
-      error: `Payment error: ${errorMsg}`,
-      orderId: orderId,
-    });
+    const errorMsg = data?.message || data?.error || data?.detail || `Gateway error (HTTP ${response.status})`;
+    console.error(`[SunPays] Error: ${errorMsg}`);
+    return res.status(200).json({ success: false, error: errorMsg, orderId });
 
   } catch (error: any) {
     console.error('[SunPays] Exception:', error.message);
-    console.error('[SunPays] Stack:', error.stack);
     if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
       return res.status(500).json({ error: 'Payment gateway timed out. Please try again.' });
     }
