@@ -41,44 +41,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       redirect: "follow",
     });
 
-    // Extract cookies from response headers
-    // Use multiple approaches for compatibility across Node.js versions
-    let userAuthCookie = "";
-    let allCookies: string[] = [];
+    // Extract user_auth cookie using multiple approaches
+    let userAuthCookieValue = "";
 
-    // Approach 1: Try getSetCookie() (Node 20+)
-    let cookieStrings: string[] = [];
+    // Approach 1: Try getSetCookie() (Node 20+, available on Vercel)
     try {
-      const setCookieResult = (tokenResponse.headers as any).getSetCookie?.();
-      if (setCookieResult && setCookieResult.length > 0) {
-        cookieStrings = setCookieResult;
+      const setCookies = (tokenResponse.headers as any).getSetCookie?.();
+      if (setCookies && Array.isArray(setCookies) && setCookies.length > 0) {
+        console.log(`getSetCookie() returned ${setCookies.length} cookies`);
+        for (const cookieStr of setCookies) {
+          const match = cookieStr.match(/^user_auth=([^;]+)/);
+          if (match) {
+            userAuthCookieValue = match[1];
+            console.log("Found user_auth via getSetCookie()");
+            break;
+          }
+        }
       }
     } catch (e) {
-      // getSetCookie not available
+      console.log("getSetCookie() not available, falling back");
     }
 
-    // Approach 2: Fall back to raw header
-    if (cookieStrings.length === 0) {
-      const rawCookie = tokenResponse.headers.get('set-cookie');
-      if (rawCookie) {
-        // Split on comma but not within cookie values (rough heuristic)
-        cookieStrings = rawCookie.split(/,(?=[^ ])/);
-      }
-    }
-
-    console.log(`Found ${cookieStrings.length} cookies from rooter.gg`);
-
-    for (const cookie of cookieStrings) {
-      const cookiePair = cookie.split(';')[0].trim();
-      allCookies.push(cookiePair);
+    // Approach 2: Extract from raw set-cookie header using regex
+    if (!userAuthCookieValue) {
+      const rawCookie = tokenResponse.headers.get('set-cookie') || '';
+      console.log(`Raw set-cookie header length: ${rawCookie.length}`);
       
-      if (cookiePair.startsWith('user_auth=')) {
-        userAuthCookie = cookiePair.replace('user_auth=', '');
+      // Directly search for user_auth= in the raw header string
+      const authMatch = rawCookie.match(/user_auth=([^;]+)/);
+      if (authMatch) {
+        userAuthCookieValue = authMatch[1];
+        console.log("Found user_auth via regex extraction from raw header");
       }
     }
 
-    if (!userAuthCookie) {
-      console.error("No user_auth cookie found. Cookies received:", allCookies.map(c => c.split('=')[0]));
+    if (!userAuthCookieValue) {
+      console.error("No user_auth cookie found in any approach");
       return res.status(502).json({ 
         success: false, 
         error: "Verification service temporarily unavailable. Please try again." 
@@ -88,12 +86,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Decode the cookie to extract accessToken
     let accessToken = "";
     try {
-      const decoded = decodeURIComponent(userAuthCookie);
+      const decoded = decodeURIComponent(userAuthCookieValue);
       const parsed = JSON.parse(decoded);
       accessToken = parsed.accessToken || "";
       console.log("Got access token:", accessToken ? "yes (length: " + accessToken.length + ")" : "no");
     } catch (e) {
-      console.error("Failed to parse user_auth cookie. Raw value length:", userAuthCookie.length);
+      console.error("Failed to parse user_auth cookie. Raw value length:", userAuthCookieValue.length);
       return res.status(502).json({ 
         success: false, 
         error: "Verification service temporarily unavailable. Please try again." 
@@ -120,7 +118,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "Device-Id": "web-verifier",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "application/json",
-        "Cookie": allCookies.join('; '),
       },
     });
 
