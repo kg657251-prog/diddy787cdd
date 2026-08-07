@@ -94,7 +94,6 @@ export default function App() {
       if (response.ok && data.success && data.name) {
         setVerifiedName(data.name);
       } else {
-        // Fallback gracefully to BGMI Player if Rooter is blocked
         setVerifiedName('BGMI Player');
       }
     } catch (e) {
@@ -114,7 +113,6 @@ export default function App() {
   const springY = useSpring(mouseY, { stiffness: 100, damping: 30 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    // Skip parallax on touch/mobile devices to avoid scroll blocking
     if (window.matchMedia('(pointer: coarse)').matches) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
@@ -123,9 +121,7 @@ export default function App() {
     mouseY.set(y);
   };
 
-  // Simulation for live purchase popups and feed
   useEffect(() => {
-    // Initial feed data
     const initialFeed = Array.from({ length: 8 }).map((_, i) => {
       const randomUid = Math.floor(5100000000 + Math.random() * 900000000).toString();
       const maskedUid = `${randomUid.substring(0, 4)}****${randomUid.substring(8)}`;
@@ -140,7 +136,6 @@ export default function App() {
     setRecentPurchasesFeed(initialFeed);
 
     const interval = setInterval(() => {
-      // Random 10-digit ID starting with 5
       const randomUid = Math.floor(5100000000 + Math.random() * 900000000).toString();
       const maskedUid = `${randomUid.substring(0, 4)}****${randomUid.substring(8)}`;
       const randomPkg = UC_PACKAGES[Math.floor(Math.random() * UC_PACKAGES.length)];
@@ -153,7 +148,6 @@ export default function App() {
 
       setLivePurchases([newPurchase]);
       
-      // Update feed
       setRecentPurchasesFeed(prev => [
         { ...newPurchase, time: 'Just now' },
         ...prev.map(p => ({
@@ -177,7 +171,6 @@ export default function App() {
 
     setIsProcessingPayment(true);
     try {
-      // Check for network status before proceeding
       if (!navigator.onLine) {
         toast.error('Offline', {
           description: 'You appear to be offline. Please reconnect and try again.'
@@ -737,8 +730,8 @@ export default function App() {
           </Card>
         </section>
 
-        {/* Live Purchase Notifications */}
-        <div className="fixed bottom-20 left-3 sm:bottom-4 md:bottom-6 sm:left-4 md:left-6 z-50 pointer-events-none max-w-[calc(100vw-4rem)] sm:max-w-[calc(100vw-2rem)]">
+        {/* Live Purchase Notifications - bottom left, doesn't overlap Telegram button */}
+        <div style={{ position: 'fixed', bottom: '1.25rem', left: '0.75rem', zIndex: 9000, pointerEvents: 'none', maxWidth: 'calc(100vw - 5rem)' }}>
           <AnimatePresence mode="wait">
             {livePurchases.map((purchase) => (
               <motion.div
@@ -746,7 +739,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                className="bg-card/95 backdrop-blur-md border border-primary/20 p-2 md:p-2.5 rounded-lg shadow-xl shadow-primary/10 flex items-center gap-2.5 min-w-[180px] md:min-w-[220px] relative pointer-events-auto"
+                className="bg-card/95 backdrop-blur-md border border-primary/20 p-2 md:p-2.5 rounded-lg shadow-xl shadow-primary/10 flex items-center gap-2.5 min-w-[160px] max-w-[220px] relative pointer-events-auto"
               >
                 <button 
                   onClick={() => setLivePurchases([])}
@@ -754,8 +747,8 @@ export default function App() {
                 >
                   <X className="w-2.5 h-2.5" />
                 </button>
-                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/10">
-                  <UserIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/10">
+                  <UserIcon className="w-3.5 h-3.5 text-primary" />
                 </div>
                 <div className="flex flex-col min-w-0 pr-2">
                   <div className="text-[10px] font-bold text-foreground truncate leading-none mb-0.5">
@@ -777,299 +770,3 @@ export default function App() {
 
         {/* How It Works Section */}
         <section id="about" className="mt-12 sm:mt-16 md:mt-24 mb-12 sm:mb-16 md:mb-24">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-xl sm:text-3xl font-black uppercase italic tracking-tight mb-2">How it <span className="text-primary">Works</span></h2>
-            <p className="text-muted-foreground">Get your UC in 3 simple steps</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
-            {[
-              { icon: UserIcon, title: "Enter ID", desc: "Enter your BGMI Player ID and verify your nickname." },
-              { icon: Zap, title: "Select UC", desc: "Choose the UC package that fits your needs." },
-              { icon: CreditCard, title: "Pay & Receive", desc: "Complete payment and receive UC instantly." }
-            ].map((step, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.2 }}
-                className="flex flex-col items-center text-center p-4 sm:p-6 rounded-2xl bg-card/20 border border-border/50"
-              >
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 sm:mb-4 border border-primary/20">
-                  <step.icon className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-                </div>
-                <h3 className="text-lg font-bold uppercase tracking-tight mb-2">{step.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* FAQ Section */}
-        <section className="mb-12 sm:mb-16 md:mb-24">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-xl sm:text-3xl font-black uppercase italic tracking-tight mb-2">Frequently Asked <span className="text-primary">Questions</span></h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
-            {[
-              { q: "Is it safe to top-up here?", a: "Yes, we are an official partner. All transactions are secure and encrypted." },
-              { q: "How long does delivery take?", a: "UC is delivered instantly to your account after payment confirmation." },
-              { q: "What if I enter the wrong ID?", a: "Please double-check your ID. We verify nicknames to help prevent errors." },
-              { q: "Do you offer refunds?", a: "Refunds are processed only if the UC is not delivered due to technical issues." }
-            ].map((faq, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="p-4 sm:p-6 rounded-xl bg-card/30 border border-border/50 hover:border-primary/30 transition-colors"
-              >
-                <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-                  <Info className="w-4 h-4" />
-                  {faq.q}
-                </h4>
-                <p className="text-sm text-muted-foreground">{faq.a}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* Support Section */}
-        <section id="support" className="mb-12 sm:mb-16 md:mb-24 p-4 sm:p-6 md:p-12 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-primary/10 to-transparent border border-primary/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
-            <div>
-              <h2 className="text-xl sm:text-3xl font-black uppercase italic tracking-tight mb-4">Need <span className="text-primary">Support?</span></h2>
-              <p className="text-muted-foreground mb-8">Our dedicated support team is available 24/7 to help you with any issues or questions.</p>
-              <div className="space-y-4">
-                <Button 
-                  className="w-full sm:w-auto h-12 px-8 font-bold uppercase tracking-wider gap-2 shadow-lg shadow-sky-500/20 bg-sky-600 hover:bg-sky-700 border-none mb-4 sm:mb-0" 
-                  render={
-                    <a href="https://t.me/+14347328402" target="_blank" rel="noopener noreferrer">
-                      <TelegramIcon className="w-5 h-5 text-white" />
-                      Telegram Support
-                    </a>
-                  } 
-                />
-                <Button 
-                  className="w-full sm:w-auto h-12 px-8 font-bold uppercase tracking-wider gap-2 ml-0 sm:ml-4 shadow-lg shadow-green-500/20 bg-[#25D366] hover:bg-[#20bd5a] border-none text-white" 
-                  render={
-                    <a href="https://wa.me/+919118900229" target="_blank" rel="noopener noreferrer">
-                      <WhatsAppIcon className="w-5 h-5 text-white" />
-                      WhatsApp Support
-                    </a>
-                  } 
-                />
-                <div className="flex items-center gap-4 pt-2">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-muted flex items-center justify-center">
-                        <UserIcon className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">5 Agents Online</span>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: "Response Time", value: "< 15 Mins" },
-                { label: "Working Hours", value: "24/7" },
-                { label: "Location", value: "India" }
-              ].map((item, idx) => (
-                <div key={idx} className={cn("p-4 rounded-xl bg-background/50 border border-border/50")}>
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{item.label}</div>
-                    <div className="text-sm font-bold text-primary">{item.value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-
-
-      {/* Player Verified Popup */}
-      <Dialog open={isVerifiedPopupOpen} onOpenChange={setIsVerifiedPopupOpen}>
-        <DialogContent className="sm:max-w-[400px] bg-card/95 backdrop-blur-xl border-green-500/20 overflow-hidden p-0 rounded-[2rem] shadow-[0_0_50px_rgba(34,197,94,0.1)]">
-          <div className="relative p-6 sm:p-8">
-            {/* Ambient Background Glow */}
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-green-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-green-500/5 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Header section with status */}
-            <div className="flex items-center justify-between mb-8 relative z-10">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">Secure Connection</span>
-              </div>
-              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[9px] font-black px-2 py-0">
-                OFFICIAL SYNC
-              </Badge>
-            </div>
-
-            {/* Main Profile Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="relative z-10 bg-gradient-to-br from-background/80 to-background/40 border border-white/5 rounded-2xl p-6 mb-8 shadow-inner overflow-hidden group"
-            >
-              {/* Card Background Patterns */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
-              
-              <div className="flex flex-col items-center text-center">
-                <div className="relative mb-4">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center border border-primary/30 group-hover:scale-105 transition-transform duration-500 p-2 overflow-hidden bg-black/40">
-                    <UserIcon className="w-10 h-10 text-primary" />
-                  </div>
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.5, type: 'spring' }}
-                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary rounded-full border-4 border-background flex items-center justify-center"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                  </motion.div>
-                </div>
-
-                <div className="space-y-1">
-                  <h3 className="text-2xl font-black tracking-tight text-foreground uppercase italic leading-none px-2 overflow-visible">
-                    {verifiedName}
-                  </h3>
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground/60">
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Player ID:</span>
-                    <span className="text-sm font-mono font-medium text-foreground/80 tracking-tighter">{playerId}</span>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-white/5 w-full grid grid-cols-2 gap-4">
-                  <div className="text-left">
-                    <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Server Status</div>
-                    <div className="text-[10px] font-bold text-primary uppercase">Live & Active</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Region</div>
-                    <div className="text-[10px] font-bold text-foreground uppercase tracking-tight">India (IN)</div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Action Section */}
-            <div className="space-y-4 relative z-10">
-              <Button
-                className="w-full h-14 text-base font-black uppercase tracking-widest italic group/verified relative overflow-hidden bg-primary hover:bg-primary/90 text-white border-none rounded-xl shadow-xl shadow-primary/20"
-                onClick={() => {
-                  setIsVerifiedPopupOpen(false);
-                  document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  Continue to Packs
-                  <ChevronRight className="w-5 h-5 group-hover/verified:translate-x-1 transition-transform" />
-                </span>
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
-                />
-              </Button>
-              
-              <p className="text-[9px] text-center text-muted-foreground uppercase tracking-[0.2em] font-black opacity-40">
-                Verified via Secure API Gateway
-              </p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-
-      {/* Footer */}
-      {/* Footer */}
-      <footer className="mt-12 md:mt-20 border-t border-border/30 bg-background py-12 md:py-16 relative overflow-hidden">
-        {/* Subtle Ambient Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none opacity-50" />
-
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8 mb-16">
-            <div className="col-span-1 md:col-span-6 flex flex-col justify-center">
-              <div className="mb-6">
-                <h3 className="text-2xl sm:text-3xl font-black uppercase italic tracking-tighter text-foreground mb-3">
-                  CARDING <span className="text-primary">UC</span>
-                </h3>
-                <p className="text-muted-foreground/70 text-sm leading-relaxed max-w-md">
-                  India's premier destination for instant BGMI UC top-ups. We deliver lightning-fast processing, bank-grade security, and unmatched reliability for gamers nationwide.
-                </p>
-              </div>
-              
-              <div className="flex flex-col gap-3 text-sm font-medium text-muted-foreground/80">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/20">
-                    <ShieldCheck className="w-3 h-3 text-green-500" />
-                  </div>
-                  100% Safe & Official Process
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                    <Zap className="w-3 h-3 text-amber-500" />
-                  </div>
-                  Instant Automated Delivery
-                </div>
-              </div>
-            </div>
-            
-            <div className="col-span-1 md:col-span-3 md:pl-8">
-              <h4 className="font-bold uppercase tracking-widest text-xs mb-6 text-foreground/90">Company</h4>
-              <ul className="space-y-4 text-sm text-muted-foreground/70 font-medium">
-                <li><a href="#" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> About Us</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> Terms & Conditions</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> Refund Policy</a></li>
-              </ul>
-            </div>
-            
-            <div className="col-span-1 md:col-span-3">
-              <h4 className="font-bold uppercase tracking-widest text-xs mb-6 text-foreground/90">Support</h4>
-              <ul className="space-y-4 text-sm text-muted-foreground/70 font-medium">
-                <li><a href="#support" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> Help Center</a></li>
-                <li>
-                  <a href="https://t.me/+14347328402" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-sky-500/10 flex items-center justify-center">
-                      <TelegramIcon className="w-3 h-3 text-sky-500" />
-                    </div>
-                    Telegram Support
-                  </a>
-                </li>
-                <li><a href="#support" className="hover:text-primary transition-colors inline-flex items-center gap-2 group"><ChevronRight className="w-3 h-3 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" /> FAQ</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-border/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] sm:text-xs text-muted-foreground/50 uppercase tracking-widest font-bold">
-            <p>Copyright © 2026 CARDINGUC. All rights reserved.</p>
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5"><Gamepad2 className="w-3.5 h-3.5" /> Gamers First</span>
-              <div className="w-1 h-1 rounded-full bg-border/50" />
-              <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> SSL Secured</span>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* Floating Telegram Button */}
-      <motion.a
-        href="https://t.me/+14347328402"
-        target="_blank"
-        rel="noopener noreferrer"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        className="fixed bottom-4 right-3 sm:right-4 md:bottom-6 md:right-6 z-[60] w-14 h-14 md:w-16 md:h-16 bg-[#0088cc] text-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgb(0,136,204,0.4)] border border-white/20 transition-all touch-target safe-bottom"
-      >
-        <TelegramIcon className="w-8 h-8 md:w-10 md:h-10 shrink-0" />
-        <div className="absolute inset-0 rounded-full border-2 border-[#0088cc] animate-ping opacity-30" />
-      </motion.a>
-    </div>
-  );
-}
