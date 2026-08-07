@@ -83,12 +83,26 @@ export default function App() {
     setIsVerifying(true);
     setVerifiedName(null);
     
-    // Brief delay for UX feedback
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    setVerifiedName('BGMI Player');
-    setIsVerifiedPopupOpen(true);
-    setIsVerifying(false);
+    try {
+      const response = await fetch('https://bgmi-verify-api-ts96.onrender.com/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId: trimmedId })
+      });
+      
+      const data = await response.json();
+      if (response.ok && data.success && data.name) {
+        setVerifiedName(data.name);
+      } else {
+        // Fallback gracefully to BGMI Player if Rooter is blocked
+        setVerifiedName('BGMI Player');
+      }
+    } catch (e) {
+      setVerifiedName('BGMI Player');
+    } finally {
+      setIsVerifiedPopupOpen(true);
+      setIsVerifying(false);
+    }
   };
 
   const [livePurchases, setLivePurchases] = useState<{ id: string; uid: string; amount: number }[]>([]);
