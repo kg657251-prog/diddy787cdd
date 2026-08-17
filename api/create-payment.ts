@@ -1,37 +1,71 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
-import { createHmac } from 'crypto';
-import axios from 'axios';
+export const config = {
+  runtime: 'edge',
+};
 
 const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || 'ecee0739b16abec50862a78185b881e3f1772c8bd5dced5b';
 const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || '59750f656226f2dbb23518500a3c99a8f3207bdab4f3964c20ac89170628c105';
 const SUNPAYS_BASE_URL = 'https://sunpaytm.quest/api/public/v1/payins';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+async function generateHmacSha256(secret: string, payload: string) {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signatureBuffer = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    encoder.encode(payload)
+  );
+  
+  return Array.from(new Uint8Array(signatureBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+export default async function handler(req: Request) {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   try {
-    const { playerId, packageId, price, name, email, phone, paymentMethod } = req.body;
+    const bodyObjOriginal = await req.json();
+    const { playerId, packageId, price, name, email, phone } = bodyObjOriginal;
 
     if (!playerId || !packageId || !price) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const host = req.headers.host || 'cardinguc.com';
+    const host = req.headers.get('host') || 'cardinguc.com';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const siteUrl = `${protocol}://${host}`;
 
     const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     const orderId = `CUC${Date.now()}${randomSuffix}`;
 
-    // Amount as integer (paise or rupees? docs say 2500 = Rs.2500, so it's rupees as number)
     const amount = Math.round(parseFloat(price));
 
-    // Build exact minimal body matching SunPays docs example
     const bodyObj: Record<string, any> = {
       order_id: orderId,
       amount: amount,
@@ -44,33 +78,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       metadata: { player_id: playerId, package_id: packageId }
     };
 
-    // Stringify ONCE — sign this exact string
     const rawBody = JSON.stringify(bodyObj);
+    const signature = await generateHmacSha256(SUNPAYS_API_SECRET.trim(), rawBody);
 
-    // Compute HMAC-SHA256 signature
-    const signature = createHmac('sha256', SUNPAYS_API_SECRET.trim())
-      .update(rawBody)
-      .digest('hex');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout for speed
 
-    console.log('[SunPays] Order ID:', orderId);
-    console.log('[SunPays] Amount:', amount);
-    console.log('[SunPays] Signature:', signature);
-
-    // Pass rawBody as string so axios sends it byte-for-byte as signed
-    const response = await axios.post(SUNPAYS_BASE_URL, rawBody, {
-      timeout: 20000,
+    const response = await fetch(SUNPAYS_BASE_URL, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': SUNPAYS_API_KEY.trim(),
         'x-signature': signature,
       },
-      validateStatus: () => true,
+      body: rawBody,
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
 
-    const data = response.data;
-    console.log('[SunPays] HTTP Status:', response.status);
-    console.log('[SunPays] Response:', JSON.stringify(data));
-
+    const data = await response.json();
+    
     const checkoutUrl =
       data?.checkout_url ||
       data?.payment_url ||
@@ -79,18 +107,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       data?.merchant_gateway_payment_url;
 
     if ((response.status === 200 || response.status === 201) && checkoutUrl) {
-      return res.status(200).json({ success: true, paymentUrl: checkoutUrl, orderId });
+      return new Response(JSON.stringify({ success: true, paymentUrl: checkoutUrl, orderId }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const errorMsg = data?.message || data?.error || data?.detail || `Gateway error (HTTP ${response.status})`;
-    console.error('[SunPays] Error:', errorMsg, '| Full response:', JSON.stringify(data));
-    return res.status(200).json({ success: false, error: errorMsg, orderId });
+    return new Response(JSON.stringify({ success: false, error: errorMsg, orderId }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error: any) {
-    console.error('[SunPays] Exception:', error.message);
-    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-      return res.status(500).json({ error: 'Payment gateway timed out. Please try again.' });
+    if (error.name === 'AbortError') {
+      return new Response(JSON.stringify({ error: 'Payment gateway timed out. Please try again.' }), {
+        status: 504,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-    return res.status(500).json({ error: `System error: ${error.message}` });
+    return new Response(JSON.stringify({ error: `System error: ${error.message}` }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 }
