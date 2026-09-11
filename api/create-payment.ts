@@ -2,9 +2,11 @@ export const config = {
   runtime: 'edge',
 };
 
-const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || 'ecee0739b16abec50862a78185b881e3f1772c8bd5dced5b';
-const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || '59750f656226f2dbb23518500a3c99a8f3207bdab4f3964c20ac89170628c105';
-const SUNPAYS_BASE_URL = 'https://sunpaytm.quest/api/public/v1/payins';
+const BONDPAYS_CONFIG = {
+  baseUrl: 'https://api.bond-payss.com/v1/create',
+  merchantId: process.env.BONDPAYS_MERCHANT_ID || '100888216',
+  apiKey: process.env.BONDPAYS_API_KEY || 'ad4f9f40e0f9a59190ea89eb9544f831',
+};
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,24 +14,11 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-async function generateHmacSha256(secret: string, payload: string) {
+async function md5Hex(input: string): Promise<string> {
   const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const key = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  
-  const signatureBuffer = await crypto.subtle.sign(
-    'HMAC',
-    key,
-    encoder.encode(payload)
-  );
-  
-  return Array.from(new Uint8Array(signatureBuffer))
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest('MD5', data);
+  return Array.from(new Uint8Array(hashBuffer))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
 }
@@ -47,8 +36,8 @@ export default async function handler(req: Request) {
   }
 
   try {
-    const bodyObjOriginal = await req.json();
-    const { playerId, packageId, price, name, email, phone } = bodyObjOriginal;
+    const body = await req.json();
+    const { playerId, packageId, price } = body;
 
     if (!playerId || !packageId || !price) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -62,63 +51,50 @@ export default async function handler(req: Request) {
     const siteUrl = `${protocol}://${host}`;
 
     const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    const orderId = `CUC${Date.now()}${randomSuffix}`;
+    const merchantOrderNo = `ORDER_${Date.now()}_${randomSuffix}`;
+    const formattedAmount = parseFloat(price).toFixed(2);
+    const callbackUrl = `${siteUrl}/api/payment-callback`;
 
-    const amount = Math.round(parseFloat(price));
+    // BondPays signature: md5(merchant_id + amount + merchant_order_no + api_key + callback_url)
+    const signString = `${BONDPAYS_CONFIG.merchantId}${formattedAmount}${merchantOrderNo}${BONDPAYS_CONFIG.apiKey}${callbackUrl}`;
+    const signature = await md5Hex(signString);
 
-    const bodyObj: Record<string, any> = {
-      order_id: orderId,
-      amount: amount,
-      currency: 'INR',
-      method: 'upi',
-      customer_name: name || 'BGMI Player',
-      customer_phone: phone || '9999999999',
-      customer_email: email || 'player@cardinguc.com',
-      notify_url: `${siteUrl}/api/payment-callback`,
-      metadata: { player_id: playerId, package_id: packageId }
+    const requestBody = {
+      merchant_id: BONDPAYS_CONFIG.merchantId,
+      api_key: BONDPAYS_CONFIG.apiKey,
+      amount: formattedAmount,
+      merchant_order_no: merchantOrderNo,
+      callback_url: callbackUrl,
+      extra: `${playerId}`,
+      signature: signature,
     };
 
-    const rawBody = JSON.stringify(bodyObj);
-    const signature = await generateHmacSha256(SUNPAYS_API_SECRET.trim(), rawBody);
-
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout for speed
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const response = await fetch(SUNPAYS_BASE_URL, {
+    const response = await fetch(BONDPAYS_CONFIG.baseUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': SUNPAYS_API_KEY.trim(),
-        'x-signature': signature,
-      },
-      body: rawBody,
-      signal: controller.signal
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
 
     const data = await response.json();
-    
-    const checkoutUrl =
-      data?.checkout_url ||
-      data?.payment_url ||
-      data?.redirect_url ||
-      data?.transaction?.gateway_payment_url ||
-      data?.merchant_gateway_payment_url;
 
-    if ((response.status === 200 || response.status === 201) && checkoutUrl) {
-      return new Response(JSON.stringify({ success: true, paymentUrl: checkoutUrl, orderId }), {
+    if (data && data.success === true && data.payment_url) {
+      return new Response(JSON.stringify({ success: true, paymentUrl: data.payment_url, orderId: merchantOrderNo }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } else {
+      const errorMsg = data?.message || data?.error || 'Payment gateway returned an error. Please try again.';
+      return new Response(JSON.stringify({ success: false, error: errorMsg, orderId: merchantOrderNo }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const errorMsg = data?.message || data?.error || data?.detail || `Gateway error (HTTP ${response.status})`;
-    return new Response(JSON.stringify({ success: false, error: errorMsg, orderId }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
   } catch (error: any) {
     if (error.name === 'AbortError') {
       return new Response(JSON.stringify({ error: 'Payment gateway timed out. Please try again.' }), {
