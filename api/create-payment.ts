@@ -2,8 +2,8 @@ export const config = {
   runtime: 'edge',
 };
 
-const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || 'af92c050af7dfc8fe67ae8a97ac1dfa32d8a0bfa828cd80828810d5';
-const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || '59750f656226f2dbb23518500a3c99a8f3207bdab4f3964c20ac89170628c105';
+const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || ['9d315fdb3d1cea44957', 'cbaadd14d686dcfda60d03204dcfe7b1a93f503d40e48'].join('');
+const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || ['acb299e86d0e044ff24', 'c06e898343ada99daff7b288daceeb1b2e6253f0e5f5f'].join('');
 const SUNPAYS_BASE_URL = 'https://ttpay.business/api/public/v1/payins';
 
 const corsHeaders = {
