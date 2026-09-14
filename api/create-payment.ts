@@ -2,19 +2,37 @@ export const config = {
   runtime: 'edge',
 };
 
-// Key parts split to prevent secret scanning false-positive during commit
-const DEFAULT_API_KEY = ['sk_live', 'b27b4631c0ca313f5e609663a28b7b146b019a0727c17d75'].join('_');
-
-const DIVINEPAY_CONFIG = {
-  baseUrl: 'https://divinepay.us.cc/api/payin/payin/create',
-  apiKey: process.env.DIVINEPAY_API_KEY || DEFAULT_API_KEY,
-};
+const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || 'af92c050af7dfc8fe67ae8a97ac1dfa32d8a0bfa828cd80828810d5';
+const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || '59750f656226f2dbb23518500a3c99a8f3207bdab4f3964c20ac89170628c105';
+const SUNPAYS_BASE_URL = 'https://ttpay.business/api/public/v1/payins';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
+
+async function generateHmacSha256(secret: string, payload: string) {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signatureBuffer = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    encoder.encode(payload)
+  );
+  
+  return Array.from(new Uint8Array(signatureBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
 
 export default async function handler(req: Request) {
   if (req.method === 'OPTIONS') {
@@ -29,8 +47,8 @@ export default async function handler(req: Request) {
   }
 
   try {
-    const body = await req.json();
-    const { playerId, packageId, price } = body;
+    const bodyObjOriginal = await req.json();
+    const { playerId, packageId, price, name, email, phone } = bodyObjOriginal;
 
     if (!playerId || !packageId || !price) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -39,41 +57,68 @@ export default async function handler(req: Request) {
       });
     }
 
+    const host = req.headers.get('host') || 'cardinguc.com';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const siteUrl = `${protocol}://${host}`;
+
+    const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const orderId = `CUC${Date.now()}${randomSuffix}`;
+
     const amount = Math.round(parseFloat(price));
+
+    const bodyObj: Record<string, any> = {
+      order_id: orderId,
+      amount: amount,
+      currency: 'INR',
+      method: 'upi',
+      customer_name: name || 'BGMI Player',
+      customer_phone: phone || '9999999999',
+      customer_email: email || 'player@cardinguc.com',
+      notify_url: `${siteUrl}/api/payment-callback`,
+      metadata: { player_id: playerId, package_id: packageId }
+    };
+
+    const rawBody = JSON.stringify(bodyObj);
+    const signature = await generateHmacSha256(SUNPAYS_API_SECRET.trim(), rawBody);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const response = await fetch(DIVINEPAY_CONFIG.baseUrl, {
+    const response = await fetch(SUNPAYS_BASE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': DIVINEPAY_CONFIG.apiKey,
+        'x-api-key': SUNPAYS_API_KEY.trim(),
+        'x-signature': signature,
       },
-      body: JSON.stringify({ amount }),
-      signal: controller.signal,
+      body: rawBody,
+      signal: controller.signal
     });
-
+    
     clearTimeout(timeoutId);
 
     const data = await response.json();
+    
+    const checkoutUrl =
+      data?.checkout_url ||
+      data?.payment_url ||
+      data?.redirect_url ||
+      data?.transaction?.gateway_payment_url ||
+      data?.merchant_gateway_payment_url;
 
-    if (data && data.success === true && data.data?.paymentUrl) {
-      return new Response(JSON.stringify({
-        success: true,
-        paymentUrl: data.data.paymentUrl,
-        orderId: data.data.order_id || '',
-      }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    } else {
-      const errorMsg = data?.message || data?.error || 'Payment gateway returned an error. Please try again.';
-      return new Response(JSON.stringify({ success: false, error: errorMsg }), {
+    if ((response.status === 200 || response.status === 201) && checkoutUrl) {
+      return new Response(JSON.stringify({ success: true, paymentUrl: checkoutUrl, orderId }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const errorMsg = data?.message || data?.error || data?.detail || `Gateway error (HTTP ${response.status})`;
+    return new Response(JSON.stringify({ success: false, error: errorMsg, orderId }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
   } catch (error: any) {
     if (error.name === 'AbortError') {
       return new Response(JSON.stringify({ error: 'Payment gateway timed out. Please try again.' }), {
