@@ -2,9 +2,11 @@ export const config = {
   runtime: 'edge',
 };
 
-const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || ['9d315fdb3d1cea44957', 'cbaadd14d686dcfda60d03204dcfe7b1a93f503d40e48'].join('');
-const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || ['acb299e86d0e044ff24', 'c06e898343ada99daff7b288daceeb1b2e6253f0e5f5f'].join('');
-const SUNPAYS_BASE_URL = 'https://ttpay.business/api/public/v1/payins';
+const WATCHPAYS_CONFIG = {
+  baseUrl: 'https://api.watchpays.com/v1/create',
+  merchantId: process.env.WATCHPAYS_MERCHANT_ID || '100666060',
+  apiKey: process.env.WATCHPAYS_API_KEY || 'c76ec04f7b270339aaa05d66c71aed94',
+};
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,26 +14,27 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-async function generateHmacSha256(secret: string, payload: string) {
+async function md5Hex(input: string): Promise<string> {
   const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const key = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  
-  const signatureBuffer = await crypto.subtle.sign(
-    'HMAC',
-    key,
-    encoder.encode(payload)
-  );
-  
-  return Array.from(new Uint8Array(signatureBuffer))
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest('MD5', data);
+  return Array.from(new Uint8Array(hashBuffer))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
+}
+
+async function generateWatchpaysSignature(
+  merchant_id: string,
+  amount: string,
+  merchant_order_no: string,
+  callback_url: string,
+  apiKey: string
+): Promise<string> {
+  const params: Record<string, string> = { merchant_id, amount, merchant_order_no, callback_url };
+  const sortedKeys = Object.keys(params).sort();
+  let signStr = sortedKeys.map(key => `${key}=${params[key]}`).join('&');
+  signStr += `&key=${apiKey}`;
+  return md5Hex(signStr);
 }
 
 export default async function handler(req: Request) {
@@ -47,8 +50,8 @@ export default async function handler(req: Request) {
   }
 
   try {
-    const bodyObjOriginal = await req.json();
-    const { playerId, packageId, price, name, email, phone } = bodyObjOriginal;
+    const body = await req.json();
+    const { playerId, packageId, price } = body;
 
     if (!playerId || !packageId || !price) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -62,63 +65,59 @@ export default async function handler(req: Request) {
     const siteUrl = `${protocol}://${host}`;
 
     const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    const orderId = `CUC${Date.now()}${randomSuffix}`;
+    const merchantOrderNo = `ORD${Date.now()}${randomSuffix}`;
+    const formattedAmount = parseFloat(price).toFixed(2);
 
-    const amount = Math.round(parseFloat(price));
+    const callbackUrl = `${siteUrl}/api/payment-callback`;
+    const signature = await generateWatchpaysSignature(
+      WATCHPAYS_CONFIG.merchantId,
+      formattedAmount,
+      merchantOrderNo,
+      callbackUrl,
+      WATCHPAYS_CONFIG.apiKey
+    );
 
-    const bodyObj: Record<string, any> = {
-      order_id: orderId,
-      amount: amount,
-      currency: 'INR',
-      method: 'upi',
-      customer_name: name || 'BGMI Player',
-      customer_phone: phone || '9999999999',
-      customer_email: email || 'player@cardinguc.com',
-      notify_url: `${siteUrl}/api/payment-callback`,
-      metadata: { player_id: playerId, package_id: packageId }
+    const requestBody = {
+      merchant_id: WATCHPAYS_CONFIG.merchantId,
+      api_key: WATCHPAYS_CONFIG.apiKey,
+      amount: formattedAmount,
+      merchant_order_no: merchantOrderNo,
+      callback_url: callbackUrl,
+      extra: `${playerId}`,
+      signature: signature,
     };
-
-    const rawBody = JSON.stringify(bodyObj);
-    const signature = await generateHmacSha256(SUNPAYS_API_SECRET.trim(), rawBody);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const response = await fetch(SUNPAYS_BASE_URL, {
+    const response = await fetch(WATCHPAYS_CONFIG.baseUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': SUNPAYS_API_KEY.trim(),
-        'x-signature': signature,
-      },
-      body: rawBody,
-      signal: controller.signal
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
 
     const data = await response.json();
-    
-    const checkoutUrl =
-      data?.checkout_url ||
-      data?.payment_url ||
-      data?.redirect_url ||
-      data?.transaction?.gateway_payment_url ||
-      data?.merchant_gateway_payment_url;
 
-    if ((response.status === 200 || response.status === 201) && checkoutUrl) {
-      return new Response(JSON.stringify({ success: true, paymentUrl: checkoutUrl, orderId }), {
+    if (data && (data.success === true || data.status === 'success') && data.payment_url) {
+      return new Response(JSON.stringify({ success: true, paymentUrl: data.payment_url, orderId: merchantOrderNo }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } else if (data && data.url) {
+      return new Response(JSON.stringify({ success: true, paymentUrl: data.url, orderId: merchantOrderNo }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } else {
+      const errorMsg = data?.message || data?.error || 'Payment gateway returned an error. Please try again.';
+      return new Response(JSON.stringify({ success: false, error: errorMsg, orderId: merchantOrderNo }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const errorMsg = data?.message || data?.error || data?.detail || `Gateway error (HTTP ${response.status})`;
-    return new Response(JSON.stringify({ success: false, error: errorMsg, orderId }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
   } catch (error: any) {
     if (error.name === 'AbortError') {
       return new Response(JSON.stringify({ error: 'Payment gateway timed out. Please try again.' }), {
