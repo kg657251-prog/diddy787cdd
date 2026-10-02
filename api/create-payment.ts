@@ -4,8 +4,8 @@ export const config = {
 
 const WATCHPAYS_CONFIG = {
   baseUrl: 'https://api.watchpays.com/v1/create',
-  merchantId: process.env.WATCHPAYS_MERCHANT_ID || '100666060',
-  apiKey: process.env.WATCHPAYS_API_KEY || 'c76ec04f7b270339aaa05d66c71aed94',
+  merchantId: '100666060',
+  apiKey: 'c76ec04f7b270339aaa05d66c71aed94',
 };
 
 const corsHeaders = {
