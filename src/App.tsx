@@ -890,8 +890,8 @@ export default function App() {
 
       {/* Player Verified Popup — Purple Theme with Green Tick */}
       <Dialog open={isVerifiedPopupOpen} onOpenChange={setIsVerifiedPopupOpen}>
-        <DialogContent className="sm:max-w-[420px] bg-card/98 backdrop-blur-2xl border-primary/30 overflow-hidden p-0 rounded-[2rem] shadow-[0_0_80px_rgba(var(--primary),0.25)]">
-          <div className="relative p-6 sm:p-8">
+        <DialogContent className="sm:max-w-[420px] bg-card/98 backdrop-blur-2xl border-primary/30 p-0 !rounded-[2.25rem] sm:!rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(var(--primary),0.25)]">
+          <div className="relative p-6 sm:p-8 rounded-[2.25rem] sm:rounded-[2.5rem] overflow-hidden">
             {/* Ambient Background Glows */}
             <div className="absolute -top-32 -left-32 w-64 h-64 bg-primary/15 rounded-full blur-[80px] pointer-events-none" />
             <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
