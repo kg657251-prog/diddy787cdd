@@ -412,7 +412,7 @@ export default function App() {
                   <div className="mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-black shadow-lg shadow-primary/20">1</div>
-                      <CardTitle className="text-lg uppercase tracking-wider font-black italic">Enter Player ID</CardTitle>
+                      <CardTitle className="text-lg uppercase tracking-wider font-black italic">Enter Player UID & Verify</CardTitle>
                     </div>
                   </div>
                   <div className="pt-2">
@@ -582,7 +582,7 @@ export default function App() {
                   <div className="mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-black shadow-lg shadow-primary/20">3</div>
-                      <CardTitle className="text-lg uppercase tracking-wider font-black italic">Select Payment Channel</CardTitle>
+                      <CardTitle className="text-lg uppercase tracking-wider font-black italic">Select Payment Option</CardTitle>
                     </div>
                   </div>
                   <div className="pt-2">
@@ -888,77 +888,117 @@ export default function App() {
       </main>
 
 
-      {/* Player Verified Popup */}
+      {/* Player Verified Popup — Purple Theme with Green Tick */}
       <Dialog open={isVerifiedPopupOpen} onOpenChange={setIsVerifiedPopupOpen}>
-        <DialogContent className="sm:max-w-[400px] bg-card/95 backdrop-blur-xl border-green-500/20 overflow-hidden p-0 rounded-[2rem] shadow-[0_0_50px_rgba(34,197,94,0.1)]">
+        <DialogContent className="sm:max-w-[420px] bg-card/98 backdrop-blur-2xl border-primary/30 overflow-hidden p-0 rounded-[2rem] shadow-[0_0_80px_rgba(var(--primary),0.25)]">
           <div className="relative p-6 sm:p-8">
-            {/* Ambient Background Glow */}
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-green-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-green-500/5 rounded-full blur-3xl pointer-events-none" />
+            {/* Ambient Background Glows */}
+            <div className="absolute -top-32 -left-32 w-64 h-64 bg-primary/15 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-primary/5 rounded-full blur-[60px] pointer-events-none" />
 
-            {/* Header section with status */}
-            <div className="flex items-center justify-between mb-8 relative z-10">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">Secure Connection</span>
+            {/* Header: PLAYER VERIFIED */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="text-center mb-5 relative z-10"
+            >
+              <h2 className="text-xl font-black uppercase tracking-[0.2em] text-foreground italic">
+                PLAYER VERIFIED
+              </h2>
+            </motion.div>
+
+            {/* Animated Green Tick Hero */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex justify-center mb-6 relative z-10"
+            >
+              <div className="relative">
+                {/* Outer Ring Pulse */}
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0, 0.4] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute inset-0 w-24 h-24 rounded-full border-2 border-green-500/40"
+                />
+                {/* Green Circle Background */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 15 }}
+                  className="w-24 h-24 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-[0_0_40px_rgba(34,197,94,0.35),0_0_80px_rgba(34,197,94,0.15)]"
+                >
+                  {/* Animated SVG Checkmark */}
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="drop-shadow-lg">
+                    <motion.path
+                      d="M12 24L20 32L36 16"
+                      stroke="white"
+                      strokeWidth="4.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ delay: 0.6, duration: 0.5, ease: 'easeOut' }}
+                    />
+                  </svg>
+                </motion.div>
               </div>
-              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[9px] font-black px-2 py-0">
-                OFFICIAL SYNC
-              </Badge>
-            </div>
+            </motion.div>
 
-            {/* Main Profile Card */}
+            {/* Success Title */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-center mb-6 relative z-10"
+            >
+              <h3 className="text-xl font-black text-foreground uppercase tracking-[0.1em] mb-1 italic">
+                {verifiedName}
+              </h3>
+              <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                <span className="text-xs font-bold uppercase tracking-widest">Player ID:</span>
+                <span className="text-sm font-mono font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20">{playerId}</span>
+              </div>
+            </motion.div>
+
+            {/* Player Profile Details Panel */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="relative z-10 bg-gradient-to-br from-background/80 to-background/40 border border-white/5 rounded-2xl p-6 mb-8 shadow-inner overflow-hidden group"
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="relative z-10 bg-background/40 border border-primary/20 rounded-xl p-4 mb-6"
             >
-              {/* Card Background Patterns */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
-              
-              <div className="flex flex-col items-center text-center">
-                <div className="relative mb-4">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center border border-primary/30 group-hover:scale-105 transition-transform duration-500 p-2 overflow-hidden bg-black/40">
-                    <UserIcon className="w-10 h-10 text-primary" />
-                  </div>
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.5, type: 'spring' }}
-                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary rounded-full border-4 border-background flex items-center justify-center"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                  </motion.div>
+              <div className="space-y-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground font-medium">Server Region</span>
+                  <span className="font-bold text-foreground flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    BGMI India (IN)
+                  </span>
                 </div>
-
-                <div className="space-y-1">
-                  <h3 className="text-2xl font-black tracking-tight text-foreground uppercase italic leading-none px-2 overflow-visible">
-                    {verifiedName}
-                  </h3>
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground/60">
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Player ID:</span>
-                    <span className="text-sm font-mono font-medium text-foreground/80 tracking-tighter">{playerId}</span>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-white/5 w-full grid grid-cols-2 gap-4">
-                  <div className="text-left">
-                    <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Server Status</div>
-                    <div className="text-[10px] font-bold text-primary uppercase">Live & Active</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Region</div>
-                    <div className="text-[10px] font-bold text-foreground uppercase tracking-tight">India (IN)</div>
-                  </div>
+                <div className="h-px bg-border/30" />
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground font-medium">Verification Status</span>
+                  <span className="font-bold text-primary flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                    Official API Sync
+                  </span>
                 </div>
               </div>
             </motion.div>
 
-            {/* Action Section */}
-            <div className="space-y-4 relative z-10">
+            {/* CTA Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="space-y-4 relative z-10"
+            >
               <Button
-                className="w-full h-14 text-base font-black uppercase tracking-widest italic group/verified relative overflow-hidden bg-primary hover:bg-primary/90 text-white border-none rounded-xl shadow-xl shadow-primary/20"
+                className="w-full h-14 text-base font-black uppercase tracking-widest italic group/verified relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground border-none rounded-xl shadow-[0_8px_30px_rgba(var(--primary),0.3)] hover:shadow-[0_8px_40px_rgba(var(--primary),0.4)] transition-shadow"
                 onClick={() => {
                   setIsVerifiedPopupOpen(false);
                   document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' });
@@ -966,19 +1006,19 @@ export default function App() {
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   Continue to Packs
-                  <ChevronRight className="w-5 h-5 group-hover/verified:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-5 h-5 group-hover/verified:translate-x-1 transition-transform" />
                 </span>
-                <motion.div 
+                <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                   animate={{ x: ['-100%', '200%'] }}
-                  transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+                  transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
                 />
               </Button>
-              
-              <p className="text-[9px] text-center text-muted-foreground uppercase tracking-[0.2em] font-black opacity-40">
+
+              <p className="text-[9px] text-center text-muted-foreground uppercase tracking-[0.2em] font-black opacity-50">
                 Verified via Secure API Gateway
               </p>
-            </div>
+            </motion.div>
           </div>
         </DialogContent>
       </Dialog>
