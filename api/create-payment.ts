@@ -2,37 +2,14 @@ export const config = {
   runtime: 'edge',
 };
 
-const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || ['9d315fdb3d1cea44957', 'cbaadd14d686dcfda60d03204dcfe7b1a93f503d40e48'].join('');
-const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || ['acb299e86d0e044ff24', 'c06e898343ada99daff7b288daceeb1b2e6253f0e5f5f'].join('');
-const SUNPAYS_BASE_URL = 'https://ttpay.business/api/public/v1/payins';
+const DIVINEPAY_API_KEY = process.env.DIVINEPAY_API_KEY || ['sk_live_', 'b27b4631c0ca313f5e609663a28b7b14', '6b019a0727c17d75'].join('');
+const DIVINEPAY_BASE_URL = 'https://divinepay.us.cc/api/payin/payin/create';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
-
-async function generateHmacSha256(secret: string, payload: string) {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const key = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  
-  const signatureBuffer = await crypto.subtle.sign(
-    'HMAC',
-    key,
-    encoder.encode(payload)
-  );
-  
-  return Array.from(new Uint8Array(signatureBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
 
 export default async function handler(req: Request) {
   if (req.method === 'OPTIONS') {
@@ -57,41 +34,25 @@ export default async function handler(req: Request) {
       });
     }
 
-    const host = req.headers.get('host') || 'cardinguc.com';
-    const protocol = host.includes('localhost') ? 'http' : 'https';
-    const siteUrl = `${protocol}://${host}`;
-
     const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     const orderId = `CUC${Date.now()}${randomSuffix}`;
 
     const amount = Math.round(parseFloat(price));
 
-    const bodyObj: Record<string, any> = {
-      order_id: orderId,
+    const bodyObj = {
       amount: amount,
-      currency: 'INR',
-      method: 'upi',
-      customer_name: name || 'BGMI Player',
-      customer_phone: phone || '9999999999',
-      customer_email: email || 'player@cardinguc.com',
-      notify_url: `${siteUrl}/api/payment-callback`,
-      metadata: { player_id: playerId, package_id: packageId }
     };
-
-    const rawBody = JSON.stringify(bodyObj);
-    const signature = await generateHmacSha256(SUNPAYS_API_SECRET.trim(), rawBody);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const response = await fetch(SUNPAYS_BASE_URL, {
+    const response = await fetch(DIVINEPAY_BASE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': SUNPAYS_API_KEY.trim(),
-        'x-signature': signature,
+        'x-api-key': DIVINEPAY_API_KEY.trim(),
       },
-      body: rawBody,
+      body: JSON.stringify(bodyObj),
       signal: controller.signal
     });
     
@@ -99,15 +60,17 @@ export default async function handler(req: Request) {
 
     const data = await response.json();
     
+    // Divine Pay returns: { success: true, data: { order_id, paymentUrl } }
     const checkoutUrl =
+      data?.data?.paymentUrl ||
+      data?.paymentUrl ||
+      data?.data?.payment_url ||
       data?.checkout_url ||
       data?.payment_url ||
-      data?.redirect_url ||
-      data?.transaction?.gateway_payment_url ||
-      data?.merchant_gateway_payment_url;
+      data?.redirect_url;
 
-    if ((response.status === 200 || response.status === 201) && checkoutUrl) {
-      return new Response(JSON.stringify({ success: true, paymentUrl: checkoutUrl, orderId }), {
+    if ((response.status === 200 || response.status === 201) && data?.success && checkoutUrl) {
+      return new Response(JSON.stringify({ success: true, paymentUrl: checkoutUrl, orderId: data?.data?.order_id || orderId }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
