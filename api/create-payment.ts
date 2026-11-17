@@ -4,7 +4,7 @@ export const config = {
 
 const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || ['9d315fdb3d1cea44957', 'cbaadd14d686dcfda60d03204dcfe7b1a93f503d40e48'].join('');
 const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || ['acb299e86d0e044ff24', 'c06e898343ada99daff7b288daceeb1b2e6253f0e5f5f'].join('');
-const SUNPAYS_BASE_URL = 'https://ttpay.business/api/public/v1/payins';
+const SUNPAYS_BASE_URL = 'https://ttpay.buzz/api/public/v1/payins';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
