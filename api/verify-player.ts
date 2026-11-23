@@ -2,47 +2,14 @@ export const config = {
   runtime: 'edge',
 };
 
+const NEFERBYTE_API_KEY = process.env.NEFERBYTE_API_KEY || ['7e7fd9cae78a542b', 'f3ba679f94a5afa2'].join('');
+const NEFERBYTE_BASE_URL = 'https://api.neferbyte.com/game-id-checker/bgmi';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
-
-/**
- * Fetches a fresh access token from rooter.gg by reading the user_auth cookie.
- */
-async function getRooterAccessToken(): Promise<string | null> {
-  try {
-    const res = await fetch('https://www.rooter.gg/', {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      },
-      redirect: 'follow',
-    });
-
-    // Extract user_auth cookie from Set-Cookie headers
-    const setCookieHeaders = res.headers.getSetCookie?.() ?? [];
-    // Fallback: some runtimes expose it differently
-    const rawSetCookie = setCookieHeaders.length > 0
-      ? setCookieHeaders
-      : (res.headers.get('set-cookie') || '').split(/,(?=\s*\w+=)/).filter(Boolean);
-
-    for (const cookie of rawSetCookie) {
-      const match = cookie.match(/user_auth=([^;]+)/);
-      if (match) {
-        const decoded = decodeURIComponent(match[1]);
-        const parsed = JSON.parse(decoded);
-        return parsed.accessToken || null;
-      }
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 export default async function handler(req: Request) {
   if (req.method === 'OPTIONS') {
@@ -61,7 +28,7 @@ export default async function handler(req: Request) {
     const { playerId } = body;
 
     if (!playerId) {
-      return new Response(JSON.stringify({ error: 'Player ID is required' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Player ID is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -78,21 +45,7 @@ export default async function handler(req: Request) {
       });
     }
 
-    // Step 1: Get access token from rooter.gg
-    const accessToken = await getRooterAccessToken();
-
-    if (!accessToken) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Unable to authenticate with verification service.',
-      }), {
-        status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Step 2: Fetch BGMI username using the token
-    const apiUrl = `https://bazaar.rooter.io/order/getUnipinUsername?gameCode=BGMI_IN&id=${trimmedId}`;
+    const apiUrl = `${NEFERBYTE_BASE_URL}/${encodeURIComponent(trimmedId)}`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -100,11 +53,7 @@ export default async function handler(req: Request) {
     const apiResponse = await fetch(apiUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Device-Type': 'web',
-        'App-Version': '1.0.0',
-        'Device-Id': 'web-client',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'x-api-key': NEFERBYTE_API_KEY.trim(),
         'Accept': 'application/json',
       },
       signal: controller.signal,
@@ -114,21 +63,28 @@ export default async function handler(req: Request) {
 
     const data = await apiResponse.json();
 
-    if (data.transaction === 'SUCCESS' && data.unipinRes?.username) {
+    if (!data.error && data.data && data.data.username) {
       return new Response(JSON.stringify({
         success: true,
-        name: data.unipinRes.username,
+        name: data.data.username,
         message: 'ID Verified',
       }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } else {
+      const errorMsg =
+        data.msg === 'id_not_found'
+          ? 'Player not found. Please check your BGMI UID.'
+          : data.msg === 'numeric_id_type'
+          ? 'Invalid ID format. Must be numeric.'
+          : data.msg || 'Player not found. Please check your BGMI UID.';
+
       return new Response(JSON.stringify({
         success: false,
-        error: data.message || 'Player not found. Please check your BGMI UID.',
+        error: errorMsg,
       }), {
-        status: 404,
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

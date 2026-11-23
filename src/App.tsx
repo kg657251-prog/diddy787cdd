@@ -93,14 +93,19 @@ export default function App() {
       const data = await response.json();
       if (response.ok && data.success && data.name) {
         setVerifiedName(data.name);
+        setIsVerifiedPopupOpen(true);
       } else {
-        // Fallback gracefully to BGMI Player if Rooter is blocked
-        setVerifiedName('BGMI Player');
+        setVerifiedName(null);
+        toast.error('Verification Failed', {
+          description: data.error || 'Player not found. Please check your BGMI UID.'
+        });
       }
     } catch (e) {
-      setVerifiedName('BGMI Player');
+      setVerifiedName(null);
+      toast.error('Verification Error', {
+        description: 'Failed to verify player ID. Please try again.'
+      });
     } finally {
-      setIsVerifiedPopupOpen(true);
       setIsVerifying(false);
     }
   };
