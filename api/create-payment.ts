@@ -2,8 +2,12 @@ export const config = {
   runtime: 'edge',
 };
 
-const SUNPAYS_API_KEY = process.env.SUNPAYS_API_KEY || ['9d315fdb3d1cea44957', 'cbaadd14d686dcfda60d03204dcfe7b1a93f503d40e48'].join('');
-const SUNPAYS_API_SECRET = process.env.SUNPAYS_API_SECRET || ['acb299e86d0e044ff24', 'c06e898343ada99daff7b288daceeb1b2e6253f0e5f5f'].join('');
+const SUNPAYS_API_KEY =
+  process.env.SUNPAYS_API_KEY ||
+  ['9d315fdb3d1cea44957', 'cbaadd14d686dcfda60d03204dcfe7b1a93f503d40e48'].join('');
+const SUNPAYS_API_SECRET =
+  process.env.SUNPAYS_API_SECRET ||
+  ['acb299e86d0e044ff24', 'c06e898343ada99daff7b288daceeb1b2e6253f0e5f5f'].join('');
 const SUNPAYS_BASE_URL = 'https://ttpay.buzz/api/public/v1/payins';
 
 const corsHeaders = {
@@ -22,15 +26,15 @@ async function generateHmacSha256(secret: string, payload: string) {
     false,
     ['sign']
   );
-  
+
   const signatureBuffer = await crypto.subtle.sign(
     'HMAC',
     key,
     encoder.encode(payload)
   );
-  
+
   return Array.from(new Uint8Array(signatureBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
+    .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 }
 
@@ -57,6 +61,19 @@ export default async function handler(req: Request) {
       });
     }
 
+    if (packageId === 'uc-1800' || Math.round(parseFloat(price)) === 299) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'The 1800 UC (\u20b9299) pack is currently sold out. Please select another pack.',
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     const host = req.headers.get('host') || 'cardinguc.com';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const siteUrl = `${protocol}://${host}`;
@@ -75,7 +92,9 @@ export default async function handler(req: Request) {
       customer_phone: phone || '9999999999',
       customer_email: email || 'player@cardinguc.com',
       notify_url: `${siteUrl}/api/payment-callback`,
-      metadata: { player_id: playerId, package_id: packageId }
+      return_url: `${siteUrl}/?payment=return&order_id=${orderId}&uid=${encodeURIComponent(playerId)}&name=${encodeURIComponent(name || 'BGMI Player')}`,
+      redirect_url: `${siteUrl}/?payment=return&order_id=${orderId}&uid=${encodeURIComponent(playerId)}&name=${encodeURIComponent(name || 'BGMI Player')}`,
+      metadata: { player_id: playerId, package_id: packageId },
     };
 
     const rawBody = JSON.stringify(bodyObj);
@@ -92,13 +111,13 @@ export default async function handler(req: Request) {
         'x-signature': signature,
       },
       body: rawBody,
-      signal: controller.signal
+      signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
 
     const data = await response.json();
-    
+
     const checkoutUrl =
       data?.checkout_url ||
       data?.payment_url ||
@@ -107,24 +126,30 @@ export default async function handler(req: Request) {
       data?.merchant_gateway_payment_url;
 
     if ((response.status === 200 || response.status === 201) && checkoutUrl) {
-      return new Response(JSON.stringify({ success: true, paymentUrl: checkoutUrl, orderId }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({ success: true, paymentUrl: checkoutUrl, orderId }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
-    const errorMsg = data?.message || data?.error || data?.detail || `Gateway error (HTTP ${response.status})`;
+    const errorMsg =
+      data?.message || data?.error || data?.detail || `Gateway error (HTTP ${response.status})`;
     return new Response(JSON.stringify({ success: false, error: errorMsg, orderId }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      return new Response(JSON.stringify({ error: 'Payment gateway timed out. Please try again.' }), {
-        status: 504,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({ error: 'Payment gateway timed out. Please try again.' }),
+        {
+          status: 504,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
     return new Response(JSON.stringify({ error: `System error: ${error.message}` }), {
       status: 500,
