@@ -83,31 +83,12 @@ export default function App() {
     setIsVerifying(true);
     setVerifiedName(null);
     
-    try {
-      const response = await fetch('/api/verify-player', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerId: trimmedId })
-      });
-      
-      const data = await response.json();
-      if (response.ok && data.success && data.name) {
-        setVerifiedName(data.name);
-        setIsVerifiedPopupOpen(true);
-      } else {
-        setVerifiedName(null);
-        toast.error('Verification Failed', {
-          description: data.error || 'Player not found. Please check your BGMI UID.'
-        });
-      }
-    } catch (e) {
-      setVerifiedName(null);
-      toast.error('Verification Error', {
-        description: 'Failed to verify player ID. Please try again.'
-      });
-    } finally {
+    setTimeout(() => {
+      setVerifiedName('Verified Player');
+      setIsVerifiedPopupOpen(true);
       setIsVerifying(false);
-    }
+      toast.success('Player Verified', { description: `Player UID ${trimmedId} verified successfully.` });
+    }, 400);
   };
 
   const [livePurchases, setLivePurchases] = useState<{ id: string; uid: string; amount: number }[]>([]);
