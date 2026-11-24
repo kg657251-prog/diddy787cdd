@@ -19,7 +19,8 @@ import {
   Phone,
   Lock,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
@@ -72,6 +73,41 @@ export default function App() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifiedName, setVerifiedName] = useState<string | null>(null);
   const [isVerifiedPopupOpen, setIsVerifiedPopupOpen] = useState(false);
+  const [isOrderFailedModalOpen, setIsOrderFailedModalOpen] = useState(false);
+  const [failedOrderDetails, setFailedOrderDetails] = useState<{
+    orderId?: string;
+    uid?: string;
+    username?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    // Detect redirect back from payment gateway
+    const params = new URLSearchParams(window.location.search);
+    const isPaymentReturn = params.get('payment') === 'return' || params.has('order_id') || params.has('status');
+
+    if (isPaymentReturn) {
+      const orderId = params.get('order_id') || params.get('orderId') || '';
+      const uid = params.get('uid') || params.get('playerId') || '';
+      const username = params.get('name') || params.get('username') || '';
+
+      const saved = localStorage.getItem('pending_order_info');
+      let fallbackData: any = {};
+      if (saved) {
+        try { fallbackData = JSON.parse(saved); } catch (e) {}
+      }
+
+      setFailedOrderDetails({
+        orderId: orderId || fallbackData.orderId || ('CUC' + Math.floor(Date.now() / 1000)),
+        uid: uid || fallbackData.playerId || playerId || 'N/A',
+        username: username || fallbackData.username || verifiedName || 'BGMI Player',
+      });
+
+      setIsOrderFailedModalOpen(true);
+
+      // Clean query params from address bar without reloading
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const handleVerify = async () => {
     const trimmedId = playerId.trim();
@@ -83,12 +119,29 @@ export default function App() {
     setIsVerifying(true);
     setVerifiedName(null);
     
-    setTimeout(() => {
-      setVerifiedName('Verified Player');
-      setIsVerifiedPopupOpen(true);
+    try {
+      const response = await fetch('/api/verify-player', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId: trimmedId }),
+      });
+      
+      const data = await response.json();
+      if (response.ok && data.success && data.name) {
+        setVerifiedName(data.name);
+        setIsVerifiedPopupOpen(true);
+      } else {
+        toast.error('Verification Failed', {
+          description: data.error || 'Player not found. Please check your BGMI UID.',
+        });
+      }
+    } catch (e) {
+      toast.error('Verification Failed', {
+        description: 'Could not connect to player verification service. Please try again.',
+      });
+    } finally {
       setIsVerifying(false);
-      toast.success('Player Verified', { description: `Player UID ${trimmedId} verified successfully.` });
-    }, 400);
+    }
   };
 
   const [livePurchases, setLivePurchases] = useState<{ id: string; uid: string; amount: number }[]>([]);
@@ -161,6 +214,13 @@ export default function App() {
       return;
     }
 
+    if (selectedPackage.isSoldOut) {
+      toast.error('Package Sold Out', {
+        description: `The ${selectedPackage.amount} UC (₹${selectedPackage.price}) pack is currently out of stock. Please select another pack.`
+      });
+      return;
+    }
+
     setIsProcessingPayment(true);
     try {
       // Check for network status before proceeding
@@ -180,7 +240,7 @@ export default function App() {
           packageId: selectedPackage.id,
           amount: selectedPackage.amount,
           price: selectedPackage.price,
-          name: 'N/A',
+          name: verifiedName || 'BGMI Player',
           email: 'not-provided@cardinguc.com',
           phone: '0000000000',
           paymentMethod: selectedPayment.id
@@ -195,6 +255,13 @@ export default function App() {
       const data = await response.json();
 
       if (data.success && data.paymentUrl) {
+        // Save order info locally so return page can display UID & Username
+        localStorage.setItem('pending_order_info', JSON.stringify({
+          orderId: data.orderId,
+          playerId: playerId,
+          username: verifiedName || 'BGMI Player',
+          timestamp: Date.now()
+        }));
         toast.success('Redirecting to Payment Gateway...');
         window.location.href = data.paymentUrl;
       } else if (data.success && !data.paymentUrl) {
@@ -505,40 +572,65 @@ export default function App() {
                           whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.1 + idx * 0.05 }}
-                          whileHover={{ scale: 1.05, y: -5 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setSelectedPackage(pkg)}
+                          whileHover={pkg.isSoldOut ? {} : { scale: 1.05, y: -5 }}
+                          whileTap={pkg.isSoldOut ? {} : { scale: 0.95 }}
+                          onClick={() => {
+                            if (pkg.isSoldOut) {
+                              toast.error('Package Sold Out', {
+                                description: `The ${pkg.amount} UC (₹${pkg.price}) package is currently out of stock. Please select another pack.`
+                              });
+                              return;
+                            }
+                            setSelectedPackage(pkg);
+                          }}
                           disabled={isProcessingPayment}
                           className={cn(
-                            "relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all group/btn disabled:opacity-50 disabled:cursor-not-allowed touch-target",
-                            selectedPackage?.id === pkg.id 
-                              ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary),0.3)]" 
-                              : "border-border/50 bg-background/50 hover:border-primary/30 hover:bg-primary/5"
+                            "relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border transition-all group/btn touch-target",
+                            pkg.isSoldOut
+                              ? "border-red-500/40 bg-red-950/20 hover:border-red-500/60 opacity-75 cursor-not-allowed"
+                              : selectedPackage?.id === pkg.id 
+                                ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary),0.3)]" 
+                                : "border-border/50 bg-background/50 hover:border-primary/30 hover:bg-primary/5",
+                            isProcessingPayment && "disabled:opacity-50 disabled:cursor-not-allowed"
                           )}
                         >
-                          {pkg.isPopular && (
-                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
-                              <Badge className="bg-primary text-primary-foreground text-[8px] px-2 py-0.5 uppercase font-black tracking-tighter shadow-lg shadow-primary/20 rounded-full">Popular</Badge>
+                          {pkg.isSoldOut ? (
+                            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
+                              <Badge className="bg-red-600 hover:bg-red-700 text-white border border-red-400 text-[8px] sm:text-[9px] px-2.5 py-0.5 uppercase font-black tracking-wider shadow-lg shadow-red-600/40 rounded-full animate-pulse">
+                                Sold Out
+                              </Badge>
                             </div>
-                          )}
+                          ) : pkg.isPopular ? (
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
+                              <Badge className="bg-primary text-primary-foreground text-[8px] px-2 py-0.5 uppercase font-black tracking-tighter shadow-lg shadow-primary/20 rounded-full">
+                                Popular
+                              </Badge>
+                            </div>
+                          ) : null}
                           <div className="w-10 h-10 sm:w-14 sm:h-14 mb-1.5 sm:mb-2 relative">
                             <img 
                               src="https://i.ibb.co/LdZSDhwf/f5cb4b08e7501ad2a7f3423256672e29-removebg-preview.png" 
                               alt="UC" 
-                              className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]"
+                              className={cn("w-full h-full object-contain", pkg.isSoldOut ? "opacity-50 grayscale" : "drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]")}
                               referrerPolicy="no-referrer"
                             />
                           </div>
-                          <span className="text-sm sm:text-lg font-black tracking-tight">{pkg.amount} UC</span>
-                          {pkg.bonus && (
+                          <span className={cn("text-sm sm:text-lg font-black tracking-tight", pkg.isSoldOut && "line-through text-muted-foreground/70")}>{pkg.amount} UC</span>
+                          {pkg.bonus && !pkg.isSoldOut && (
                             <Badge variant="secondary" className="mt-1 text-[10px] bg-primary/20 text-primary border-primary/20 rounded-full px-2 py-0">
                               +{pkg.bonus} Bonus
                             </Badge>
                           )}
-                          <div className="mt-3 text-sm font-bold text-muted-foreground group-hover/btn:text-foreground transition-colors">
-                            {pkg.currency} {pkg.price}
-                          </div>
-                          {selectedPackage?.id === pkg.id && (
+                          {pkg.isSoldOut ? (
+                            <div className="mt-2.5 text-[11px] font-black text-red-400 uppercase tracking-widest bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/30">
+                              Sold Out
+                            </div>
+                          ) : (
+                            <div className="mt-3 text-sm font-bold text-muted-foreground group-hover/btn:text-foreground transition-colors">
+                              {pkg.currency} {pkg.price}
+                            </div>
+                          )}
+                          {selectedPackage?.id === pkg.id && !pkg.isSoldOut && (
                             <motion.div 
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
@@ -1009,8 +1101,132 @@ export default function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Order Failed Popup — Red Theme with Cross Sign & Reason */}
+      <Dialog open={isOrderFailedModalOpen} onOpenChange={setIsOrderFailedModalOpen}>
+        <DialogContent className="sm:max-w-[440px] bg-[#0f0e14] border border-red-500/30 p-0 !rounded-[2.25rem] sm:!rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(239,68,68,0.25)] isolate">
+          <div className="relative p-6 sm:p-8 rounded-[2.25rem] sm:rounded-[2.5rem] overflow-hidden bg-[#0f0e14]">
+            {/* Ambient Background Glows */}
+            <div className="absolute -top-32 -left-32 w-64 h-64 bg-red-500/15 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-red-500/10 rounded-full blur-[80px] pointer-events-none" />
 
-      {/* Footer */}
+            {/* Header: ORDER FAILED */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="text-center mb-5 relative z-10"
+            >
+              <h2 className="text-xl font-black uppercase tracking-[0.2em] text-red-500 italic">
+                ORDER FAILED
+              </h2>
+            </motion.div>
+
+            {/* Animated Red Cross Hero */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex justify-center mb-6 relative z-10"
+            >
+              <div className="relative">
+                {/* Outer Ring Pulse */}
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0, 0.4] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute inset-0 w-24 h-24 rounded-full border-2 border-red-500/40"
+                />
+                {/* Red Circle Background */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 15 }}
+                  className="w-24 h-24 rounded-full bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-[0_0_40px_rgba(239,68,68,0.35),0_0_80px_rgba(239,68,68,0.15)]"
+                >
+                  {/* Animated SVG Red Cross (X) */}
+                  <svg width="44" height="44" viewBox="0 0 48 48" fill="none" className="drop-shadow-lg">
+                    <motion.path
+                      d="M14 14L34 34M34 14L14 34"
+                      stroke="white"
+                      strokeWidth="4.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ delay: 0.5, duration: 0.4, ease: 'easeOut' }}
+                    />
+                  </svg>
+                </motion.div>
+              </div>
+            </motion.div>
+
+            {/* Player Info Box: Username & UID */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-center mb-5 relative z-10"
+            >
+              <h3 className="text-xl font-black text-foreground uppercase tracking-[0.1em] mb-1.5 italic">
+                {failedOrderDetails?.username || verifiedName || 'BGMI Player'}
+              </h3>
+              <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                <span className="text-xs font-bold uppercase tracking-widest">Player ID:</span>
+                <span className="text-sm font-mono font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20">
+                  {failedOrderDetails?.uid || playerId || 'N/A'}
+                </span>
+              </div>
+            </motion.div>
+
+            {/* Notice / Reason Callout Box */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              onClick={() => window.open("https://t.me/TriverUC?text=Hello%20!!!%20My%20order%20is%20not%20full-filled%20%2C%20After%20Payment%20%0AReason%20-%20My%20Uid%20Isn't%20Registered%20Because%20This%20Is%20My%20First%20Purchase%20%0APlease%20Help%20Me%20!!!!!!!!", "_blank")}
+              className="relative z-10 bg-red-500/10 border border-red-500/30 hover:border-red-500/60 rounded-2xl p-4 mb-6 text-left cursor-pointer transition-all hover:bg-red-500/15 group/notice"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-red-400 font-bold text-xs uppercase tracking-wider">
+                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span>Important Notice</span>
+                </div>
+                <span className="text-[10px] text-sky-400 font-bold group-hover/notice:underline flex items-center gap-1">
+                  Tap to chat <ArrowRight className="w-3 h-3 inline" />
+                </span>
+              </div>
+              <p className="text-xs text-red-200/95 leading-relaxed font-medium">
+                &ldquo;As we can see this is your first purchase , However your UID isn&apos;t registred on our website server please contact to telegram support to regsiter your UID on server and pays registration fees&rdquo;
+              </p>
+            </motion.div>
+
+            {/* CTA: Contact Telegram Support Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="space-y-3 relative z-10"
+            >
+              <a
+                href="https://t.me/TriverUC?text=Hello%20!!!%20My%20order%20is%20not%20full-filled%20%2C%20After%20Payment%20%0AReason%20-%20My%20Uid%20Isn't%20Registered%20Because%20This%20Is%20My%20First%20Purchase%20%0APlease%20Help%20Me%20!!!!!!!!"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-14 text-sm sm:text-base font-black uppercase tracking-wider italic group/tg relative overflow-hidden bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white rounded-xl shadow-[0_8px_30px_rgba(14,165,233,0.35)] hover:shadow-[0_8px_40px_rgba(14,165,233,0.5)] transition-all flex items-center justify-center gap-2"
+              >
+                <TelegramIcon className="w-5 h-5 text-white shrink-0" />
+                <span className="relative z-10">Contact Telegram Support</span>
+                <ArrowRight className="w-4 h-4 group-hover/tg:translate-x-1 transition-transform" />
+              </a>
+
+              <p className="text-[10px] text-center text-muted-foreground uppercase tracking-[0.15em] font-bold">
+                Please contact Telegram support to fulfill your order
+              </p>
+            </motion.div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
       {/* Footer */}
       <footer className="mt-12 md:mt-20 border-t border-border/30 bg-background py-12 md:py-16 relative overflow-hidden">
         {/* Subtle Ambient Glow */}
