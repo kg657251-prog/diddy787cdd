@@ -61,19 +61,6 @@ export default async function handler(req: Request) {
       });
     }
 
-    if (packageId === 'uc-1800' || Math.round(parseFloat(price)) === 299) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'The 1800 UC (\u20b9299) pack is currently sold out. Please select another pack.',
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
     const host = req.headers.get('host') || 'cardinguc.com';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const siteUrl = `${protocol}://${host}`;
